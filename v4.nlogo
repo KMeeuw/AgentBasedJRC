@@ -12,6 +12,7 @@ globals[
   Area-d
 
   TotalAmountofConsumers
+  MarketShares
 
 ]
 
@@ -222,19 +223,35 @@ to calculatemarketshare
   print array:item RTPH 6
 
   array:set RTP 7 array:item RTP 6 / TotalAmountofConsumers
-  type "marketshare of RTP "
+;  array:set MarketShares 0 array:item RTP 7
+  type "marketshare of RTP"
   print array:item RTP 7
   array:set CPP 7 array:item CPP 6 / TotalAmountofConsumers
+;  array:set MarketShares 1 array:item CPP 7
   type "marketshare of CPP "
   print array:item CPP 7
   array:set ToU 7 array:item ToU 6 / TotalAmountofConsumers
+;  array:set MarketShares 2 array:item ToU 7
   type "marketshare of ToU "
   print array:item ToU 7
   array:set RTPH 7 array:item RTPH 6 / TotalAmountofConsumers
+;  array:set MarketShares 3 array:item RTPH 7
   type "marketshare of RTPH "
   print array:item RTPH 7
-end
 
+;  let MarketShareslist array:to-list MarketShares
+;  let minMarketShare min MarketShareslist
+;  let marketShare -1
+;  let marketSharePosition -1
+;  while [marketShare != minMarketShare] [
+;    let i random length MarketShareslist
+;    set marketShare item i MarketShareslist
+;    set marketSharePosition i
+;  ]
+;  print MarketSharePosition
+
+
+end
 
 
 

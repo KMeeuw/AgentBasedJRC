@@ -1,10 +1,6 @@
 extensions [array]
 
 globals[
-  RTP ;; real time pricing
-  CPP ;; critical peak pricing
-  ToU ;; time of use
-  RTPH ;; real time pricing with home automation
 
   Area-a
   Area-b
@@ -12,45 +8,52 @@ globals[
   Area-d
 
   TotalAmountofConsumers
-
+  MarketShares
+  Consumers
 ]
 
-turtles-own [contractvalues charact]
 breed[LIHs LIH] ;Low Income Households
+LIHs-own [egoistic hedonic biospheric altruistic Ctechacc RTPscore CPPscore ToUscore RTPHscore chosencontract]
 breed[YMCFs YMCF] ; Young Middle Class Family
+YMCFs-own [egoistic hedonic biospheric altruistic Ctechacc RTPscore CPPscore ToUscore RTPHscore chosencontract ]
 breed[environmentalists environmentalist]
+environmentalists-own [egoistic hedonic biospheric altruistic Ctechacc RTPscore CPPscore ToUscore RTPHscore chosencontract ]
 breed[neutrals neutral]
+neutrals-own [egoistic hedonic biospheric altruistic Ctechacc RTPscore CPPscore ToUscore RTPHscore chosencontract ]
 breed[techies techie]
+techies-own [egoistic hedonic biospheric altruistic Ctechacc RTPscore CPPscore ToUscore RTPHscore chosencontract ]
+
+breed[contracts contract]
+contracts-own [contracttype flexibility financial social environmental techacc usability AmountofConsumers MarketShare InformationStrategy]
 
 to setup
   clear-all
   setup-contracts
-  setup-turtles
+  setup-consumers
   setup-patches
   initialcalculateconsumercontracts
+  set TotalAmountofConsumers 600
   reset-ticks
 end
 
 to go
-  set TotalAmountofConsumers amount_of_consumers1 + amount_of_consumers2 + amount_of_consumers3 + amount_of_consumers4 + amount_of_consumers5  ;if ticks = 1 [
   calculateconsumercontracts
-  ;]
   move-turtles
-  calculatemarketshare
+  calculatemarketshare ; to DO first calculate marketshares
   tick
 end
 
 to move-turtles
   ;  ask turtles [ right random 360 forward 1 ]
 
-  ask turtles [
-    ifelse (array:item contractvalues 1 = TRUE) [
+  ask Consumers [
+    ifelse (chosencontract = "RTP") [
       set heading towards one-of area-a]
-    [ifelse (array:item contractvalues 3 = TRUE) [
+    [ifelse (chosencontract = "CPP") [
       set heading towards one-of area-b]
-    [ifelse (array:item contractvalues 5 = TRUE) [
+    [ifelse (chosencontract = "ToU") [
       set heading towards one-of area-c]
-    [ifelse (array:item contractvalues 7 = TRUE)
+    [ifelse (chosencontract = "RTPH")
       [set heading towards one-of area-d]
       [print "er is geen enkel contract gekozen"]]]]
     fd 1]
@@ -58,106 +61,115 @@ to move-turtles
 
 end
 
-to setup-turtles
-  create-LIHs amount_of_consumers1
-  ask LIHs [ set color white]
-  create-YMCFs amount_of_consumers2
+to setup-consumers
+  create-LIHs 600
+  ask LIHs [ set color white] ; TO DO this can be removed
+  create-YMCFs 600
   ask YMCFs [set color red]
-  create-environmentalists amount_of_consumers3
+  create-environmentalists 600
   ask environmentalists [set color green]
-  create-neutrals amount_of_consumers4
+  create-neutrals 600
   ask neutrals [ set color blue]
-  create-techies amount_of_consumers5
+  create-techies 600
   ask techies [set color brown]
 
-  ask turtles [ set contractvalues array:from-list [0 FALSE 0 FALSE 0 FALSE 0 FALSE ] ]
+  set Consumers (turtle-set LIHs YMCFs environmentalists neutrals techies)
 
-  ask LIHs [set charact [5 2 4 3 1]]
-  ask YMCFs [set charact[2 5 1 4 3]]
-  ask environmentalists [set charact[3 2 5 4 1]]
-  ask neutrals [set charact[4 8 6 10 2]]
-  ask techies [set charact[3 1 2 4 5]]
+  ask Consumers [ set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set chosencontract " " ]
+
+  ask LIHs [set egoistic 5 set hedonic 2 set biospheric 4 set altruistic 3 set Ctechacc 1]
+  ask YMCFs [set egoistic 2 set hedonic 5 set biospheric 1 set altruistic 4 set Ctechacc 3]
+  ask environmentalists [set egoistic 3 set hedonic 2 set biospheric 5 set altruistic 4 set Ctechacc 1]
+  ask techies [set egoistic 3 set hedonic 1 set biospheric 2 set altruistic 4 set Ctechacc 5]
+  ask neutrals [set egoistic 3 set hedonic 3 set biospheric 3 set altruistic 3 set Ctechacc 3]
+
 end
 
 to setup-contracts
-  ;the values in the areas are the following flexibility ranking, financial gains, social gains, environmental gains, privacy and security, usability, Number of Consumers, MarketShare, CurrentInformationStrategy
-  set RTP array:from-list [2 0.8 0.4 0.6 0.2 0.2 0 0 0]
-  set CPP array:from-list [3 0.4 0.6 0.2 0.4 0.8 0 0 0]
-  set ToU array:from-list [4 0.2 0.6 0.4 0.2 0.8 0 0 0]
-  set RTPH array:from-list [1 0.8 0.2 0.8 0 0.8 0 0 0]
+ create-contracts 1 [set contracttype "RTP" set flexibility 2 set financial 0.8 set social 0.4 set environmental 0.6 set techacc 0.2 set usability 0.2 set AmountofConsumers 0 set MarketShare 0 set informationStrategy 0]
+ create-contracts 1 [set contracttype "CPP" set flexibility 3 set financial 0.4 set social 0.6 set environmental 0.2 set techacc 0.4 set usability 0.8 set AmountofConsumers 0 set MarketShare 0 set informationStrategy 0]
+ create-contracts 1 [set contracttype "ToU" set flexibility 4 set financial 0.2 set social 0.6 set environmental 0.4 set techacc 0.2 set usability 0.8 set AmountofConsumers 0 set MarketShare 0 set informationStrategy 0]
+ create-contracts 1 [set contracttype "RTPH" set flexibility 1 set financial 0.8 set social 0.2 set environmental 0.8 set techacc 0 set usability 0.8 set AmountofConsumers 0 set MarketShare 0 set informationStrategy 0]
 end
 
 to initialcalculateconsumercontracts
-  ask turtles[
-    array:set contractvalues 0 array:item RTP 1 * item 0 charact + array:item RTP 2 * item 1 charact + array:item RTP 3 * item 2 charact + array:item RTP 4 * item 3 charact + array:item RTP 5 * item 4 charact
-    array:set contractvalues 2 array:item CPP 1 * item 0 charact + array:item CPP 2 * item 1 charact + array:item CPP 3 * item 2 charact + array:item CPP 4 * item 3 charact + array:item CPP 5 * item 4 charact
-    array:set contractvalues 4 array:item ToU 1 * item 0 charact + array:item ToU 2 * item 1 charact + array:item ToU 3 * item 2 charact + array:item ToU 4 * item 3 charact + array:item ToU 5 * item 4 charact
-    array:set contractvalues 6 array:item RTPH 1 * item 0 charact + array:item RTPH 2 * item 1 charact + array:item RTPH 3 * item 2 charact + array:item RTPH 4 * item 3 charact + array:item RTPH 5 * item 4 charact
-    let contA array:item contractvalues 0
-    let contB array:item contractvalues 2
-    let contC array:item contractvalues 4
-    let contD array:item contractvalues 6
-    let test (list contA contB contC contD)
+
+ask contracts with [contracttype = "RTP"][
+  ask Consumers[
+    set RTPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [techacc] of myself * Ctechacc + [usability] of myself * hedonic
+  ]]
+ask contracts with [contracttype = "CPP"][
+  ask Consumers[
+    set CPPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [techacc] of myself * Ctechacc + [usability] of myself * hedonic
+  ]]
+ask contracts with [contracttype = "ToU"][
+  ask Consumers[
+    set ToUscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [techacc] of myself * Ctechacc + [usability] of myself * hedonic
+  ]]
+ask contracts with [contracttype = "RTPH"][
+  ask Consumers[
+    set RTPHscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [techacc] of myself * Ctechacc + [usability] of myself * hedonic
+  ]]
+
+Ask Consumers[
+let test (list RTPscore CPPscore ToUscore RTPHscore)
     let highest max test
-    ifelse(array:item contractvalues 0 = highest)[
-      array:set contractvalues 1 TRUE
-      array:set contractvalues 3 FALSE
-      array:set contractvalues 5 FALSE
-      array:set contractvalues 7 FALSE]
-    [ifelse(array:item contractvalues 2 = highest)[
-      array:set contractvalues 1 FALSE
-      array:set contractvalues 3 TRUE
-      array:set contractvalues 5 FALSE
-      array:set contractvalues 7 FALSE]
-    [ifelse(array:item contractvalues 4 = highest)[
-      array:set contractvalues 1 FALSE
-      array:set contractvalues 3 FALSE
-      array:set contractvalues 5 TRUE
-      array:set contractvalues 7 FALSE]
-    [ifelse(array:item contractvalues 6 = highest)[
-      array:set contractvalues 1 FALSE
-      array:set contractvalues 3 FALSE
-      array:set contractvalues 5 FALSE
-      array:set contractvalues 7 TRUE]
+    ifelse(RTPscore = highest)[
+      set chosencontract "RTP"]
+    [ifelse(CPPscore = highest)[
+      set chosencontract "CPP"]
+    [ifelse(ToUscore = highest)[
+      set chosencontract "TOU"]
+    [ifelse(RTPHscore = highest)[
+      set chosencontract "RTPH"]
     [show "er is iets fout"]]]]]
 
 end
 
 to calculateconsumercontracts
-  let hulp Amount_of_lazy_Consumers * TotalAmountofConsumers ; To determine the amount of lazy consumers
-  ask n-of hulp turtles[
-    array:set contractvalues 0 array:item RTP 1 * item 0 charact + array:item RTP 2 * item 1 charact + array:item RTP 3 * item 2 charact + array:item RTP 4 * item 3 charact + array:item RTP 5 * item 4 charact
-    array:set contractvalues 2 array:item CPP 1 * item 0 charact + array:item CPP 2 * item 1 charact + array:item CPP 3 * item 2 charact + array:item CPP 4 * item 3 charact + array:item CPP 5 * item 4 charact
-    array:set contractvalues 4 array:item ToU 1 * item 0 charact + array:item ToU 2 * item 1 charact + array:item ToU 3 * item 2 charact + array:item ToU 4 * item 3 charact + array:item ToU 5 * item 4 charact
-    array:set contractvalues 6 array:item RTPH 1 * item 0 charact + array:item RTPH 2 * item 1 charact + array:item RTPH 3 * item 2 charact + array:item RTPH 4 * item 3 charact + array:item RTPH 5 * item 4 charact
-    let contA array:item contractvalues 0
-    let contB array:item contractvalues 2
-    let contC array:item contractvalues 4
-    let contD array:item contractvalues 6
-    let test (list contA contB contC contD)
+  ; implement lazy consumers first it was like this
+;  let hulp Amount_of_lazy_Consumers * TotalAmountofConsumers ; To determine the amount of lazy consumers
+;  ask n-of hulp Consumers[
+;    ask contracts with [contracttype = "RTP"][
+;      set RTPscore financial * [egoistic] of myself + social * [altruistic] of myself + environmental * [biospheric] of myself + techacc * [Ctechacc] of myself + usability * [hedonic] of myself]
+;    ask contracts with [contracttype = "CPP"][
+;      set CPPscore financial * [egoistic] of myself + social * [altruistic] of myself + environmental * [biospheric] of myself + techacc * [Ctechacc] of myself + usability * [hedonic] of myself]
+;    ask contracts with [contracttype = "ToU"][
+;      set ToUscore financial * [egoistic] of myself + social * [altruistic] of myself + environmental * [biospheric] of myself + techacc * [Ctechacc] of myself + usability * [hedonic] of myself]
+;    ask contracts with [contracttype = "RTPH"][
+;      set RTPscore financial * [egoistic] of myself + social * [altruistic] of myself + environmental * [biospheric] of myself + techacc * [Ctechacc] of myself + usability * [hedonic] of myself]
+;
+  ask contracts with [contracttype = "RTP"][
+  ask Consumers[
+    set RTPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [techacc] of myself * Ctechacc + [usability] of myself * hedonic
+  ]]
+ask contracts with [contracttype = "CPP"][
+  ask Consumers[
+    set CPPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [techacc] of myself * Ctechacc + [usability] of myself * hedonic
+  ]]
+ask contracts with [contracttype = "ToU"][
+  ask Consumers[
+    set ToUscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [techacc] of myself * Ctechacc + [usability] of myself * hedonic
+  ]]
+ask contracts with [contracttype = "RTPH"][
+  ask Consumers[
+    set RTPHscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [techacc] of myself * Ctechacc + [usability] of myself * hedonic
+  ]]
+
+Ask Consumers[
+let test (list RTPscore CPPscore ToUscore RTPHscore)
     let highest max test
-    ifelse(array:item contractvalues 0 = highest)[
-      array:set contractvalues 1 TRUE
-      array:set contractvalues 3 FALSE
-      array:set contractvalues 5 FALSE
-      array:set contractvalues 7 FALSE]
-    [ifelse(array:item contractvalues 2 = highest)[
-      array:set contractvalues 1 FALSE
-      array:set contractvalues 3 TRUE
-      array:set contractvalues 5 FALSE
-      array:set contractvalues 7 FALSE]
-    [ifelse(array:item contractvalues 4 = highest)[
-      array:set contractvalues 1 FALSE
-      array:set contractvalues 3 FALSE
-      array:set contractvalues 5 TRUE
-      array:set contractvalues 7 FALSE]
-    [ifelse(array:item contractvalues 6 = highest)[
-      array:set contractvalues 1 FALSE
-      array:set contractvalues 3 FALSE
-      array:set contractvalues 5 FALSE
-      array:set contractvalues 7 TRUE]
+    ifelse(RTPscore = highest)[
+      set chosencontract "RTP"]
+    [ifelse(CPPscore = highest)[
+      set chosencontract "CPP"]
+    [ifelse(ToUscore = highest)[
+      set chosencontract "TOU"]
+    [ifelse(RTPHscore = highest)[
+      set chosencontract "RTPH"]
     [show "er is iets fout"]]]]]
 
+; TO DO implement infostrategies
 end
 
 to setup-patches
@@ -197,48 +209,68 @@ to setup-patches
 end
 
 to calculatemarketshare
-  array:set RTP 6 0
-  array:set CPP 6 0
-  array:set ToU 6 0
-  array:set RTPH 6 0
-  ask turtles[
-    ifelse(array:item contractvalues 1 = TRUE)[
-      array:set RTP 6 array:item RTP 6 + 1]
-    [ifelse(array:item contractvalues 3 = TRUE)[
-      array:set CPP 6 array:item CPP 6 + 1]
-    [ifelse(array:item contractvalues 5 = TRUE)[
-      array:set ToU 6 array:item ToU 6 + 1]
-    [ifelse(array:item contractvalues 7 = TRUE)[
-      array:set RTPH 6 array:item RTPH 6 + 1]
+  ask Contracts [set MarketShare 0
+    set AmountofConsumers 0]
+  ask Consumers[
+    ifelse(chosencontract = "RTP")[
+      ask contracts with [contracttype = "RTP"][
+        set AmountofConsumers AmountofConsumers + 1]]
+    [ifelse(chosencontract = "CPP")[
+        ask contracts with [contracttype = "CPP"][
+set AmountofConsumers AmountofConsumers + 1]]
+    [ifelse(chosencontract = "ToU")[
+        ask contracts with [contracttype = "ToU"][
+      set AmountofConsumers AmountofConsumers + 1]]
+    [ifelse(chosencontract = "RTPH")[
+        ask contracts with [contracttype = "RTPH"][
+        set AmountofConsumers AmountofConsumers + 1]]
     [show "er is geen enkel contract gekozen door de consumers"]]]]
   ]
+; Just printing below
   type "amount of consumers for RTP "
-  print array:item RTP 6
+ask contracts with [contracttype = "RTP"][
+        print AmountofConsumers]
   type "amount of consumers for CPP "
-  print array:item CPP 6
+ ask contracts with [contracttype = "CPP"][
+        print AmountofConsumers]
   type "amount of consumers ToU "
-  print array:item ToU 6
+  ask contracts with [contracttype = "ToU"][
+        print AmountofConsumers]
   type "amount of consumers RTPH "
-  print array:item RTPH 6
+  ask contracts with [contracttype = "RTPH"][
+        print AmountofConsumers]
 
-  array:set RTP 7 array:item RTP 6 / TotalAmountofConsumers
-  type "marketshare of RTP "
-  print array:item RTP 7
-  array:set CPP 7 array:item CPP 6 / TotalAmountofConsumers
-  type "marketshare of CPP "
-  print array:item CPP 7
-  array:set ToU 7 array:item ToU 6 / TotalAmountofConsumers
-  type "marketshare of ToU "
-  print array:item ToU 7
-  array:set RTPH 7 array:item RTPH 6 / TotalAmountofConsumers
-  type "marketshare of RTPH "
-  print array:item RTPH 7
+ask contracts [
+ set MarketShare AmountofConsumers / TotalAmountofConsumers
+   type "Marketshare of RTP "
+  ask contracts with [contracttype = "RTP"][
+        print MarketShare]
+     type "Marketshare of CPP "
+  ask contracts with [contracttype = "CPP"][
+        print MarketShare]
+     type "Marketshare of ToU "
+  ask contracts with [contracttype = "ToU"][
+        print MarketShare]
+     type "Marketshare of RTPH "
+  ask contracts with [contracttype = "RTPH"][
+        print MarketShare]
+]
+
+;TO DO update contracts
+
+;  let MarketShareslist array:to-list MarketShares
+;  let minMarketShare min MarketShareslist
+;  let marketShare2 -1
+;  let marketSharePosition -1
+;  while [marketShare2 != minMarketShare] [
+;    let i random length MarketShareslist
+;    set marketShare2 item i MarketShareslist
+;    set marketSharePosition i
+;  ]
+;  print MarketSharePosition
+
+
 end
-
-
-
-
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -302,90 +334,15 @@ NIL
 0
 
 SLIDER
-8
-139
-197
-172
-amount_of_consumers1
-amount_of_consumers1
-0
-1000
-500
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
--1
-198
-188
-231
-amount_of_consumers2
-amount_of_consumers2
-0
-1000
-500
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-12
-250
-201
-283
-amount_of_consumers3
-amount_of_consumers3
-0
-1000
-500
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-17
-299
-199
-332
-amount_of_consumers4
-amount_of_consumers4
-0
-1000
-500
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-17
-347
-199
-380
-amount_of_consumers5
-amount_of_consumers5
-0
-1000
-500
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
 14
 405
-225
+333
 438
 Amount_of_Lazy_Consumers
 Amount_of_Lazy_Consumers
-0
-1
-0.5
+0.4
+.6
+0.49
 0.01
 1
 NIL

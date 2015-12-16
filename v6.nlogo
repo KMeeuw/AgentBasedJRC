@@ -10,25 +10,21 @@ globals[
   total_number_of_consumers
   time_count
   checksum_total_sum_marketshares
-  number_of_unresponsive_consumers
-
-  MarketShares
-  Consumers
+  number_of_responsive_consumers
+  contract_under_consideration
+  contract_not_under_consideration1
+  contract_not_under_consideration2
+  contract_not_under_consideration3
+  highestvalue
+  value_to_change
 ]
 
-breed[LIHs LIH] ;Low Income Households
-LIHs-own [chosen_contract egoistic hedonic biospheric altruistic techacc RTPscore CPPscore ToUscore RTPHscore info_strategy_response responsiveness]
-breed[YMCFs YMCF] ; Young Middle Class Family
-YMCFs-own [chosen_contract egoistic hedonic biospheric altruistic techacc RTPscore CPPscore ToUscore RTPHscore info_strategy_response responsiveness ]
-breed[environmentalists environmentalist]
-environmentalists-own [chosen_contract egoistic hedonic biospheric altruistic techacc RTPscore CPPscore ToUscore RTPHscore info_strategy_response responsiveness ]
-breed[neutrals neutral]
-neutrals-own [chosen_contract egoistic hedonic biospheric altruistic techacc RTPscore CPPscore ToUscore RTPHscore info_strategy_response responsiveness ]
-breed[techies techie]
-techies-own [chosen_contract egoistic hedonic biospheric altruistic techacc RTPscore CPPscore ToUscore RTPHscore info_strategy_response responsiveness]
+
+breed[consumers consumer]
+consumers-own [consumer_profile chosen_contract egoistic hedonic biospheric altruistic techacc RTPscore CPPscore ToUscore RTPHscore info_strategy_response responsiveness]
 
 breed[contracts contract]
-contracts-own [contracttype flexibility financial social environmental privsec usability AmountofConsumers MarketShare InformationStrategy]
+contracts-own [contracttype flexibility financial social environmental privsec usability amount_of_consumers marketshare information_strategy]
 
 to setup
   clear-all
@@ -36,143 +32,49 @@ to setup
   setup-consumers
   setup-patches
   initialcalculateconsumercontracts
-  set total_number_of_consumers 600
+  set total_number_of_consumers 3000
+  set number_of_responsive_consumers (1 - percentage_unresponsive_consumers ) * total_number_of_consumers
   reset-ticks
 end
 
-to go
-  calculateconsumercontracts
-  move-turtles
-  calculatemarketshare ; to DO first calculate marketshares
-  tick
-end
-
-to move-turtles
-  ;  ask turtles [ right random 360 forward 1 ]
-
-  ask Consumers [
-    ifelse (chosen_contract = "RTP") [
-      set heading towards one-of area-a]
-    [ifelse (chosen_contract = "CPP") [
-      set heading towards one-of area-b]
-    [ifelse (chosen_contract = "ToU") [
-      set heading towards one-of area-c]
-    [ifelse (chosen_contract = "RTPH")
-      [set heading towards one-of area-d]
-      [print "er is geen enkel contract gekozen"]]]]
-    fd 1]
-
-
+to setup-contracts
+  create-contracts 1 [set contracttype "RTP" set flexibility 2 set financial 0.8 set social 0.4 set environmental 0.6 set privsec 0.2 set usability 0.2 set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
+  create-contracts 1 [set contracttype "CPP" set flexibility 3 set financial 0.4 set social 0.6 set environmental 0.2 set privsec 0.4 set usability 0.8 set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
+  create-contracts 1 [set contracttype "ToU" set flexibility 4 set financial 0.2 set social 0.6 set environmental 0.4 set privsec 0.2 set usability 0.8 set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
+  create-contracts 1 [set contracttype "RTPH" set flexibility 1 set financial 0.8 set social 0.2 set environmental 0.8 set privsec 0 set usability 0.8 set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
 end
 
 to setup-consumers
-  create-LIHs 600
-  ask LIHs [ set color white] ; TO DO this can be removed
-  create-YMCFs 600
-  ask YMCFs [set color red]
-  create-environmentalists 600
-  ask environmentalists [set color green]
-  create-neutrals 600
-  ask neutrals [ set color blue]
-  create-techies 600
-  ask techies [set color brown]
+  create-consumers 600 [ set consumer_profile "LIH" set egoistic 5 set hedonic 2 set biospheric 4 set altruistic 3 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
+  create-consumers 600 [ set consumer_profile "YMCF" set egoistic 2 set hedonic 5 set biospheric 3 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
+  create-consumers 600 [ set consumer_profile "environmentalist" set egoistic 3 set hedonic 2 set biospheric 5 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
+  create-consumers 600 [ set consumer_profile "techie" set egoistic 3 set hedonic 4 set biospheric 1 set altruistic 2 set techacc 5 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
+  create-consumers 600 [ set consumer_profile "neutral" set egoistic 3 set hedonic 3 set biospheric 3 set altruistic 3 set techacc 3 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
 
-  set Consumers (turtle-set LIHs YMCFs environmentalists neutrals techies)
+  ask consumers with [consumer_profile = "LIH"][
+    set info_strategy_response 1]
+  let x 0.5 * 600
+  ask n-of x consumers with [consumer_profile = "LIH"][
+    set info_strategy_response 2]
 
-  ask Consumers [ set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set chosen_contract " " ]
+  ask consumers with [consumer_profile = "YMCF"][
+    set info_strategy_response 1]
+  let y 0.25 * 600
+  ask n-of y consumers with [consumer_profile = "YMCF"][
+    set info_strategy_response 2]
 
-  ask LIHs [set egoistic 5 set hedonic 2 set biospheric 4 set altruistic 3 set techacc 1]
-  ask YMCFs [set egoistic 2 set hedonic 5 set biospheric 1 set altruistic 4 set techacc 3]
-  ask environmentalists [set egoistic 3 set hedonic 2 set biospheric 5 set altruistic 4 set techacc 1]
-  ask techies [set egoistic 3 set hedonic 1 set biospheric 2 set altruistic 4 set techacc 5]
-  ask neutrals [set egoistic 3 set hedonic 3 set biospheric 3 set altruistic 3 set techacc 3]
+  ask consumers with [consumer_profile = "environmentalist"][
+    set info_strategy_response 2]
+  let z 0.5 * 600
+  ask n-of z consumers with [consumer_profile = "environmentalist"][
+    set info_strategy_response 3]
 
-end
-to setup-contracts
- create-contracts 1 [set contracttype "RTP" set flexibility 2 set financial 0.8 set social 0.4 set environmental 0.6 set privsec 0.2 set usability 0.2 set AmountofConsumers 0 set MarketShare 0 set informationStrategy 0]
- create-contracts 1 [set contracttype "CPP" set flexibility 3 set financial 0.4 set social 0.6 set environmental 0.2 set privsec 0.4 set usability 0.8 set AmountofConsumers 0 set MarketShare 0 set informationStrategy 0]
- create-contracts 1 [set contracttype "ToU" set flexibility 4 set financial 0.2 set social 0.6 set environmental 0.4 set privsec 0.2 set usability 0.8 set AmountofConsumers 0 set MarketShare 0 set informationStrategy 0]
- create-contracts 1 [set contracttype "RTPH" set flexibility 1 set financial 0.8 set social 0.2 set environmental 0.8 set privsec 0 set usability 0.8 set AmountofConsumers 0 set MarketShare 0 set informationStrategy 0]
-end
+  ask consumers with [consumer_profile = "techie"][
+    set info_strategy_response 2]
+  let w 0.25 * 600
+  ask n-of w consumers with [consumer_profile = "techie"][
+    set info_strategy_response 3]
 
-to initialcalculateconsumercontracts
-
-ask contracts with [contracttype = "RTP"][
-  ask Consumers[
-    set RTPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
-  ]]
-ask contracts with [contracttype = "CPP"][
-  ask Consumers[
-    set CPPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
-  ]]
-ask contracts with [contracttype = "ToU"][
-  ask Consumers[
-    set ToUscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
-  ]]
-ask contracts with [contracttype = "RTPH"][
-  ask Consumers[
-    set RTPHscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
-  ]]
-
-Ask Consumers[
-let test (list RTPscore CPPscore ToUscore RTPHscore)
-    let highest max test
-    ifelse(RTPscore = highest)[
-      set chosen_contract "RTP"]
-    [ifelse(CPPscore = highest)[
-      set chosen_contract "CPP"]
-    [ifelse(ToUscore = highest)[
-      set chosen_contract "TOU"]
-    [ifelse(RTPHscore = highest)[
-      set chosen_contract "RTPH"]
-    [show "er is iets fout"]]]]]
-
-end
-
-to calculateconsumercontracts
-  ; implement lazy consumers first it was like this
-;  let hulp Amount_of_lazy_Consumers * total_number_of_consumers ; To determine the amount of lazy consumers
-;  ask n-of hulp Consumers[
-;    ask contracts with [contracttype = "RTP"][
-;      set RTPscore financial * [egoistic] of myself + social * [altruistic] of myself + environmental * [biospheric] of myself + privsec * [techacc] of myself + usability * [hedonic] of myself]
-;    ask contracts with [contracttype = "CPP"][
-;      set CPPscore financial * [egoistic] of myself + social * [altruistic] of myself + environmental * [biospheric] of myself + privsec * [techacc] of myself + usability * [hedonic] of myself]
-;    ask contracts with [contracttype = "ToU"][
-;      set ToUscore financial * [egoistic] of myself + social * [altruistic] of myself + environmental * [biospheric] of myself + privsec * [techacc] of myself + usability * [hedonic] of myself]
-;    ask contracts with [contracttype = "RTPH"][
-;      set RTPscore financial * [egoistic] of myself + social * [altruistic] of myself + environmental * [biospheric] of myself + privsec * [techacc] of myself + usability * [hedonic] of myself]
-;
-  ask contracts with [contracttype = "RTP"][
-  ask Consumers[
-    set RTPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
-  ]]
-ask contracts with [contracttype = "CPP"][
-  ask Consumers[
-    set CPPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
-  ]]
-ask contracts with [contracttype = "ToU"][
-  ask Consumers[
-    set ToUscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
-  ]]
-ask contracts with [contracttype = "RTPH"][
-  ask Consumers[
-    set RTPHscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
-  ]]
-
-Ask Consumers[
-let test (list RTPscore CPPscore ToUscore RTPHscore)
-    let highest max test
-    ifelse(RTPscore = highest)[
-      set chosen_contract "RTP"]
-    [ifelse(CPPscore = highest)[
-      set chosen_contract "CPP"]
-    [ifelse(ToUscore = highest)[
-      set chosen_contract "TOU"]
-    [ifelse(RTPHscore = highest)[
-      set chosen_contract "RTPH"]
-    [show "er is iets fout"]]]]]
-
-; TO DO implement infostrategies
 end
 
 to setup-patches
@@ -211,68 +113,235 @@ to setup-patches
   ask area-d [set pcolor red]
 end
 
+to initialcalculateconsumercontracts
+
+  ask contracts with [contracttype = "RTP"][
+    ask Consumers[
+      set RTPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
+    ]]
+  ask contracts with [contracttype = "CPP"][
+    ask Consumers[
+      set CPPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
+    ]]
+  ask contracts with [contracttype = "ToU"][
+    ask Consumers[
+      set ToUscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
+    ]]
+  ask contracts with [contracttype = "RTPH"][
+    ask Consumers[
+      set RTPHscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
+    ]]
+
+  ask Consumers[
+    let test (list RTPscore CPPscore ToUscore RTPHscore)
+    let highest max test
+    ifelse(RTPscore = highest)[
+      set chosen_contract "RTP"]
+    [ifelse(CPPscore = highest)[
+      set chosen_contract "CPP"]
+    [ifelse(ToUscore = highest)[
+      set chosen_contract "TOU"]
+    [ifelse(RTPHscore = highest)[
+      set chosen_contract "RTPH"]
+    [show "something is wrong"]]]]]
+end
+
+
+to go
+  set time_count time_count + 1
+  calculatemarketshare
+  apply_information_or_market_strategy
+  calculateconsumerchoices
+  move-turtles
+  tick
+end
+
+
 to calculatemarketshare
-  ask Contracts [set MarketShare 0
-    set AmountofConsumers 0]
+  ask Contracts [set marketshare 0
+    set amount_of_consumers 0]
   ask Consumers[
     ifelse(chosen_contract = "RTP")[
       ask contracts with [contracttype = "RTP"][
-        set AmountofConsumers AmountofConsumers + 1]]
+        set amount_of_consumers amount_of_consumers + 1]]
     [ifelse(chosen_contract = "CPP")[
-        ask contracts with [contracttype = "CPP"][
-set AmountofConsumers AmountofConsumers + 1]]
+      ask contracts with [contracttype = "CPP"][
+        set amount_of_consumers amount_of_consumers + 1]]
     [ifelse(chosen_contract = "ToU")[
-        ask contracts with [contracttype = "ToU"][
-      set AmountofConsumers AmountofConsumers + 1]]
+      ask contracts with [contracttype = "ToU"][
+        set amount_of_consumers amount_of_consumers + 1]]
     [ifelse(chosen_contract = "RTPH")[
-        ask contracts with [contracttype = "RTPH"][
-        set AmountofConsumers AmountofConsumers + 1]]
-    [show "er is geen enkel contract gekozen door de consumers"]]]]
+      ask contracts with [contracttype = "RTPH"][
+        set amount_of_consumers amount_of_consumers + 1]]
+    [show "No contract is chosen"]]]]
   ]
-; Just printing below
-  type "amount of consumers for RTP "
-ask contracts with [contracttype = "RTP"][
-        print AmountofConsumers]
-  type "amount of consumers for CPP "
- ask contracts with [contracttype = "CPP"][
-        print AmountofConsumers]
-  type "amount of consumers ToU "
-  ask contracts with [contracttype = "ToU"][
-        print AmountofConsumers]
-  type "amount of consumers RTPH "
-  ask contracts with [contracttype = "RTPH"][
-        print AmountofConsumers]
 
-ask contracts [
- set MarketShare AmountofConsumers / total_number_of_consumers
-   type "Marketshare of RTP "
+  ask contracts [
+    set marketshare amount_of_consumers / total_number_of_consumers
+  ]
+
+end
+
+to apply_information_or_market_strategy
+
+
+  set contract_under_consideration ""
+  set contract_not_under_consideration1 ""
+  set contract_not_under_consideration2 ""
+  set contract_not_under_consideration3 ""
+  let counter 0
+
+  if (time_count = 3)[
+    set time_count 0
+    let minimum_marketshare min-one-of contracts [marketshare]
+    ask contracts[
+      ifelse (marketshare = minimum_marketshare)[
+        set contract_under_consideration contracttype
+      ]
+      [ifelse (counter = 0)[
+          set contract_not_under_consideration1 contracttype
+          set counter counter + 1
+        ]
+        [ifelse (counter = 1)[
+          set contract_not_under_consideration2 contracttype
+          set counter counter + 1
+        ]
+        [ifelse (counter = 2)[
+          set contract_not_under_consideration3 contracttype
+          set counter counter + 1
+        ]
+        [print "Something wrong with the counter"]
+      ]]]]
+
+    ask contracts with [contracttype = contract_under_consideration][
+      ifelse(information_strategy = 0)[
+        update_infostrategy]
+      [update_contract]]]
+
+
+end
+
+to update_infostrategy
+  ask contracts with [contracttype = contract_under_consideration][
+    set information_strategy random (3) + 1]
+end
+
+to update_contract
+
+  set highestvalue 0
+  set value_to_change ""
+
+  ask contracts with [contracttype = contract_under_consideration][
+    set information_strategy 0]
+  let maximum_marketshare max-one-of contracts [marketshare]
+  ask contracts with [contracttype = contract_not_under_consideration1][
+
+    if (marketshare = maximum_marketshare)[
+
+    ifelse (financial > social)[
+    set highestvalue financial
+     set value_to_change "financial"]
+     [ifelse (financial < social)[
+     set highestvalue social
+       set value_to_change "social"]
+     [ print "test"]]
+;     ifelse (financial = social)
+;     [randomly chose one string and set the values
+
+     ifelse (highestvalue < privsec)
+     [set highestvalue privsec
+       set value_to_change "privsec"]
+     [ifelse (highestvalue < privsec)[
+          set highestvalue social
+       set value_to_change "social"]
+          [ print "test"]]]]
+;     ifelse (highestvalue = privsec)
+;     [chose randomly and set the values
+
+  ask contracts with [contracttype = contract_under_consideration][
+    ifelse (value_to_change = "social")[
+      let new_social (social + highestvalue) / 2
+      set financial financial - (highestvalue - social)
+      set social new_social
+      if (financial < 0)[
+        set social social - abs financial
+        set financial 0]]
+
+
+    [ifelse (value_to_change = "privsec")[
+      let new_privsec (privsec + highestvalue) / 2
+      set financial financial - (highestvalue - privsec)
+      set privsec new_privsec
+      if (financial < 0)[
+        set privsec privsec - abs financial
+        set financial 0]]
+
+      [ifelse (value_to_change = "financial")[
+          let new_financial (financial + highestvalue) / 2
+          ;chose randomly from "privsec" and "social"
+          ;compare strings and set values
+      ]
+
+
+      [print "there is a problem with highest values"]]]]
+
+
+end
+
+
+to calculateconsumerchoices
+
+  ask consumers [set responsiveness false]
+  ask n-of number_of_responsive_consumers consumers [set responsiveness true]
+
   ask contracts with [contracttype = "RTP"][
-        print MarketShare]
-     type "Marketshare of CPP "
+    ask consumers with [responsiveness = true][
+      set RTPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
+    ]]
   ask contracts with [contracttype = "CPP"][
-        print MarketShare]
-     type "Marketshare of ToU "
+    ask consumers with [responsiveness = true][
+      set CPPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
+    ]]
   ask contracts with [contracttype = "ToU"][
-        print MarketShare]
-     type "Marketshare of RTPH "
+    ask consumers with [responsiveness = true][
+      set ToUscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
+    ]]
   ask contracts with [contracttype = "RTPH"][
-        print MarketShare]
-]
+    ask consumers with [responsiveness = true][
+      set RTPHscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
+    ]]
 
-;TO DO update contracts
+  Ask Consumers[
+    let test (list RTPscore CPPscore ToUscore RTPHscore)
+    let highest max test
+    ifelse(RTPscore = highest)[
+      set chosen_contract "RTP"]
+    [ifelse(CPPscore = highest)[
+      set chosen_contract "CPP"]
+    [ifelse(ToUscore = highest)[
+      set chosen_contract "TOU"]
+    [ifelse(RTPHscore = highest)[
+      set chosen_contract "RTPH"]
+    [show "error in string chosen_contract"]]]]]
 
-;  let MarketShareslist array:to-list MarketShares
-;  let minMarketShare min MarketShareslist
-;  let marketShare2 -1
-;  let marketSharePosition -1
-;  while [marketShare2 != minMarketShare] [
-;    let i random length MarketShareslist
-;    set marketShare2 item i MarketShareslist
-;    set marketSharePosition i
-;  ]
-;  print MarketSharePosition
+  ; TO DO implement +2 for information strategy
 
+end
 
+to move-turtles
+  ;  ask turtles [ right random 360 forward 1 ]
+
+  ask Consumers [
+    ifelse (chosen_contract = "RTP") [
+      set heading towards one-of area-a]
+    [ifelse (chosen_contract = "CPP") [
+      set heading towards one-of area-b]
+    [ifelse (chosen_contract = "ToU") [
+      set heading towards one-of area-c]
+    [ifelse (chosen_contract = "RTPH")
+      [set heading towards one-of area-d]
+      [print "er is geen enkel contract gekozen"]]]]
+    fd 1]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -337,15 +406,15 @@ NIL
 0
 
 SLIDER
-14
-405
-333
-438
-Amount_of_Lazy_Consumers
-Amount_of_Lazy_Consumers
+715
+28
+1083
+61
+percentage_unresponsive_consumers
+percentage_unresponsive_consumers
 0.4
 .6
-0.49
+0.6
 0.01
 1
 NIL

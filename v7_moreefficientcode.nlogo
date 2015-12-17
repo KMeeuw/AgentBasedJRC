@@ -12,9 +12,6 @@ globals[
   checksum_total_sum_marketshares
   number_of_responsive_consumers
   contract_under_consideration
-  contract_not_under_consideration1
-  contract_not_under_consideration2
-  contract_not_under_consideration3
   highestvalue
   value_to_change
   counter
@@ -187,9 +184,6 @@ to apply_information_or_market_strategy
 
 
   set contract_under_consideration ""
-  set contract_not_under_consideration1 ""
-  set contract_not_under_consideration2 ""
-  set contract_not_under_consideration3 ""
   set counter 0
 
   if (time_count = 3)[
@@ -197,34 +191,20 @@ to apply_information_or_market_strategy
     let minimum_marketshare [marketshare] of min-one-of contracts [marketshare]
     ask contracts[
       type "The marketshare of contract " type contracttype type " is " print marketshare
-      ifelse (marketshare = minimum_marketshare)[
+      if (marketshare = minimum_marketshare)[
         set contract_under_consideration contracttype
         type "The minimum marketshare is now " print "minimum"
         ;TO DO what if two contracts are the minimum. Or does he picks everytime at ask contracts another order?
-      ]
-
-      [
-        ifelse (counter = 0)[
-          set contract_not_under_consideration1 contracttype
-          set counter counter + 1
-        ]
-        [ifelse (counter = 1)[
-          set contract_not_under_consideration2 contracttype
-          set counter counter + 1
-        ]
-        [ifelse (counter = 2)[
-          set contract_not_under_consideration3 contracttype
-          set counter counter + 1
-        ]
-        [print "Something wrong with the counter. Count is now " show counter]
-        ]]] ]
+        ]]
 
     ask contracts with [contracttype = contract_under_consideration][
       ifelse (information_strategy = 0)[
         type "Contract " type contracttype print " will apply infostrategy"
         update_infostrategy]
-      [update_contract
-        type "Contract " type contracttype print " will apply marketstrategy"]]]
+      [type "Contract " type contracttype print " will apply marketstrategy"
+        update_contract
+        ;TODO so he is already in the contract underconsideration this will never close in the subfunction below
+        ]]]
 
 
 end
@@ -241,70 +221,22 @@ to update_contract
 
   ask contracts with [contracttype = contract_under_consideration][
     set information_strategy 0
-    type "The " type contracttype print " contract with the lowestmarketshare will now update his contractattributes"
+    type "The " type contracttype print " is the contract with the LOWEST marketshare and will now update his contractattributes"
     print  "the old situation is "
     type "financial: " print financial
     type "privsec: " print privsec
-    type "social gain: " print social  ]
+    type "social gain: " print social ]
+
     let maximum_marketshare [marketshare] of max-one-of contracts [marketshare]
-    ask contracts with [contracttype = contract_not_under_consideration1][
+    let minimum2_marketshare [marketshare] of min-one-of contracts [marketshare]
+
+    ask contracts with [contracttype != contract_under_consideration and marketshare != minimum2_marketshare][
       if (marketshare = maximum_marketshare)[
-        ifelse (financial > social)[
-          set highestvalue financial
-          set value_to_change "financial"]
-        [ifelse (financial < social)[
-          set highestvalue social
-          set value_to_change "social"]
-        [ifelse (financial = social)[
-          set value_to_change one-of ["financial" "social"]
-             ifelse (value_to_change = "financial")[
-             set highestvalue financial]
-             [ifelse (value_to_change = "social")[
-             set highestvalue social]
-             [ ]]]
-        [ ]]]
-
-        ifelse (highestvalue < privsec)[
-          set highestvalue privsec
-          set value_to_change "privsec"]
-        [ifelse (highestvalue = privsec)[
-          let change_to_privsec_or_not one-of ["not_privsec" "privsec"]
-          if (change_to_privsec_or_not = "privsec")[
-            set value_to_change "privsec"
-            set highestvalue privsec]]
-        [ ]]
-        ]]
-
-       ask contracts with [contracttype = contract_not_under_consideration2][
-      if (marketshare = maximum_marketshare)[
-        ifelse (financial > social)[
-          set highestvalue financial
-          set value_to_change "financial"]
-        [ifelse (financial < social)[
-          set highestvalue social
-          set value_to_change "social"]
-        [ifelse (financial = social)[
-          set value_to_change one-of ["financial" "social"]
-             ifelse (value_to_change = "financial")[
-             set highestvalue financial]
-             [ifelse (value_to_change = "social")[
-             set highestvalue social]
-             [ ]]]
-        [ ]]]
-
-        ifelse (highestvalue < privsec)[
-          set highestvalue privsec
-          set value_to_change "privsec"]
-        [ifelse (highestvalue = privsec)[
-          let change_to_privsec_or_not one-of ["not_privsec" "privsec"]
-          if (change_to_privsec_or_not = "privsec")[
-            set value_to_change "privsec"
-            set highestvalue privsec]]
-        [ ]]
-        ]]
-
-        ask contracts with [contracttype = contract_not_under_consideration3][
-      if (marketshare = maximum_marketshare)[
+        type "The " type contracttype print " is the contract with the HIGHEST marketshare"
+        type "financial: " print financial
+        type "privsec: " print privsec
+        type "social gain: " print social
+        ;TO DO what if multiple contract have the highest marketshare. Probably this is already chosen randomly, because with ask contract always a different order
         ifelse (financial > social)[
           set highestvalue financial
           set value_to_change "financial"]
@@ -332,43 +264,60 @@ to update_contract
         ]]
 
   ask contracts with [contracttype = contract_under_consideration][
+    type "The value_to_change is: " type value_to_change type " with the value " print highestvalue
     ifelse (value_to_change = "social")[
+      type"the financial value is going to change and has the value " print financial
+      let old_financial1 financial
       let new_social (social + highestvalue) / 2
-      set financial financial - (highestvalue - social)
-      set social new_social
-      if (financial < 0)[
-        set social social - abs financial
-        set financial 0]]
+      set financial financial - (new_social - social)
+      ifelse (financial < 0)[
+        set social social + old_financial1
+        set financial 0]
+      [set social new_social ]]
 
 
     [ifelse (value_to_change = "privsec")[
+        type"the financial value is going to change and has the value " print financial
+      let old_financial2 financial
       let new_privsec (privsec + highestvalue) / 2
-      set financial financial - (highestvalue - privsec)
-      set privsec new_privsec
-      if (financial < 0)[
-        set privsec privsec - abs financial
-        set financial 0]]
+      set financial financial - (new_privsec - privsec)
+      ifelse (financial < 0)[
+        set privsec privsec + old_financial2
+        set financial 0]
+      [set privsec new_privsec]]
 
-      [ifelse (value_to_change = "financial")[
+     [ifelse (value_to_change = "financial")[
+          type"the financial value is going to change and has the value " print financial
           let new_financial (financial + highestvalue) / 2
+          type "new_financial is " print new_financial
           let random_from_privsec_social one-of ["privsec" "social"]
+          type "random chosen is " print random_from_privsec_social
              ifelse (random_from_privsec_social = "privsec")[
-               set privsec privsec - (highestvalue - financial)
-               set financial new_financial
-               if (privsec < 0)[
-                 set financial financial - abs privsec
-                 set privsec 0]]
+               let old_privsec privsec
+               set privsec privsec - (new_financial - financial)
+               type "nieuwe privsec is nu: " print privsec
+               ifelse (privsec < 0)[
+                 print "Privsec is nu onder nul"
+                 set financial financial + old_privsec
+                 set privsec 0]
+               [set financial new_financial]]
              [ifelse (random_from_privsec_social = "social")[
-               set social social - (highestvalue - financial)
-               set financial new_financial
-               if (social < 0)[
-               set financial financial - abs social
-               set social 0]]
+                 let old_social social
+               set social social - (new_financial - financial)
+               type "nieuwe social is nu: " print social
+               ifelse (social < 0)[
+               set financial financial + old_social
+               set social 0]
+               [set financial new_financial]]
              [print "there is something wrong with random choice from social and privsec!"]]]
 
+      [print "value_to_change is not social and not privsec and not financial"]]]
 
-      [print "value_to_change is not social and not privsec and not financial"]]]]
-
+    type "The " type contracttype print " was the contract with the LOWEST marketshare and updated his contractattributes"
+    print  "the new situation is "
+    type "financial: " print financial
+    type "privsec: " print privsec
+    type "social gain: " print social ]
 
 end
 
@@ -520,7 +469,7 @@ infostrategy_increasevalue
 infostrategy_increasevalue
 0
 5
-3.7
+4.4
 0.1
 1
 NIL

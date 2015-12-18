@@ -203,6 +203,7 @@ to apply_information_or_market_strategy
         update_infostrategy]
       [type "Contract " type contracttype print " will apply marketstrategy"
         update_contract
+        ;update_contract financial dan moet je bij de funcite update_contract [variable]
         ;TODO so he is already in the contract underconsideration this will never close in the subfunction below
         ]]]
 

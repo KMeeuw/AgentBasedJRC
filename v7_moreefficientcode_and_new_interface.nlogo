@@ -15,6 +15,15 @@ globals[
   highestvalue
   value_to_change
   counter
+  total_financial
+  total_social_gains
+  total_privsec
+
+  total_consumers_RTP
+  total_consumers_CPP
+  total_consumers_ToU
+  total_consumers_RTPH
+
 ]
 
 
@@ -26,50 +35,51 @@ contracts-own [contracttype flexibility financial social environmental privsec u
 
 to setup
   clear-all
+  set total_number_of_consumers Total_Number_of_Households ;sets the total_number_of_consumers to the value from the interface input
+  set number_of_responsive_consumers (1 - percentage_unresponsive_consumers ) * total_number_of_consumers ;calculates the number of responsive consumers from all the interfact inputs
   setup-contracts
+  if (Low_Income_Households + Young_Families + Environmentalists + Techies + Neutrals != 1) [print "Percentages of consumer groups don't add up to 1!!"] ;check that the input of the consumer groups percentages is correct
   setup-consumers
   setup-patches
   initialcalculateconsumercontracts
-  set total_number_of_consumers 3000
-  set number_of_responsive_consumers (1 - percentage_unresponsive_consumers ) * total_number_of_consumers
   reset-ticks
 end
 
 to setup-contracts
-  create-contracts 1 [set contracttype "RTP" set flexibility 2 set financial 0.8 set social 0.4 set environmental 0.6 set privsec 0.2 set usability 0.2 set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
-  create-contracts 1 [set contracttype "CPP" set flexibility 3 set financial 0.4 set social 0.6 set environmental 0.2 set privsec 0.4 set usability 0.8 set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
-  create-contracts 1 [set contracttype "ToU" set flexibility 4 set financial 0.2 set social 0.6 set environmental 0.4 set privsec 0.2 set usability 0.8 set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
-  create-contracts 1 [set contracttype "RTPH" set flexibility 1 set financial 0.8 set social 0.2 set environmental 0.8 set privsec 0 set usability 0.8 set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
+  create-contracts 1 [set contracttype "RTP" set flexibility 2 set financial RTP_financial set social RTP_social_gains set environmental RTP_environmental set privsec RTP_privsec set usability RTP_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
+  create-contracts 1 [set contracttype "CPP" set flexibility 3 set financial CPP_financial set social CPP_social_gains set environmental CPP_environmental set privsec CPP_privsec set usability CPP_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
+  create-contracts 1 [set contracttype "ToU" set flexibility 4 set financial ToU_financial set social ToU_social_gains set environmental ToU_environmental set privsec ToU_privsec set usability ToU_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
+  create-contracts 1 [set contracttype "RTPH" set flexibility 1 set financial CPP_HA_financial set social CPP_HA_social_gains set environmental CPP_HA_environmental set privsec CPP_HA_privsec set usability CPP_HA_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
 end
 
-to setup-consumers
-  create-consumers 600 [ set consumer_profile "LIH" set egoistic 5 set hedonic 2 set biospheric 4 set altruistic 3 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
-  create-consumers 600 [ set consumer_profile "YMCF" set egoistic 2 set hedonic 5 set biospheric 3 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
-  create-consumers 600 [ set consumer_profile "environmentalist" set egoistic 3 set hedonic 2 set biospheric 5 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
-  create-consumers 600 [ set consumer_profile "techie" set egoistic 3 set hedonic 4 set biospheric 1 set altruistic 2 set techacc 5 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
-  create-consumers 600 [ set consumer_profile "neutral" set egoistic 3 set hedonic 3 set biospheric 3 set altruistic 3 set techacc 3 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
+to setup-consumers ;this has changed so that now you can set the total number of consumers and the percentages of the different consumer profiles at the interface
+  create-consumers total_number_of_consumers * Low_Income_Households [ set consumer_profile "LIH" set egoistic 5 set hedonic 2 set biospheric 4 set altruistic 3 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
+  create-consumers total_number_of_consumers * Young_Families [ set consumer_profile "YMCF" set egoistic 2 set hedonic 5 set biospheric 3 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
+  create-consumers total_number_of_consumers * Environmentalists [ set consumer_profile "environmentalist" set egoistic 3 set hedonic 2 set biospheric 5 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
+  create-consumers total_number_of_consumers * Techies [ set consumer_profile "techie" set egoistic 3 set hedonic 4 set biospheric 1 set altruistic 2 set techacc 5 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
+  create-consumers total_number_of_consumers * Neutrals [ set consumer_profile "neutral" set egoistic 3 set hedonic 3 set biospheric 3 set altruistic 3 set techacc 3 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
 
   ask consumers with [consumer_profile = "LIH"][
     set info_strategy_response 1]
-  let x 0.5 * 600
+  let x 0.5 * total_number_of_consumers * Low_Income_Households ;this had to be adapted because now the percentage of the consumer profiles is an input
   ask n-of x consumers with [consumer_profile = "LIH"][
     set info_strategy_response 2]
 
   ask consumers with [consumer_profile = "YMCF"][
     set info_strategy_response 1]
-  let y 0.25 * 600
+  let y 0.25 * total_number_of_consumers * Young_Families
   ask n-of y consumers with [consumer_profile = "YMCF"][
     set info_strategy_response 2]
 
   ask consumers with [consumer_profile = "environmentalist"][
     set info_strategy_response 2]
-  let z 0.5 * 600
+  let z 0.5 * total_number_of_consumers * Environmentalists
   ask n-of z consumers with [consumer_profile = "environmentalist"][
     set info_strategy_response 3]
 
   ask consumers with [consumer_profile = "techie"][
     set info_strategy_response 2]
-  let w 0.25 * 600
+  let w 0.25 * total_number_of_consumers * Techies
   ask n-of w consumers with [consumer_profile = "techie"][
     set info_strategy_response 3]
 
@@ -151,6 +161,8 @@ to go
   apply_information_or_market_strategy
   calculateconsumerchoices
   move-turtles
+  calculate_totals_contract_specifications ;this calculates the sums for the contract specifications to plot it in the graph
+  calculate_number_of_consumers ;this calculates the total of consumers per contract to plot it in the graph
   tick
 end
 
@@ -383,11 +395,49 @@ to move-turtles
       [print "er is geen enkel contract gekozen"]]]]
     fd 2]
 end
+
+to calculate_totals_contract_specifications ;for each run it calculates the contracts' total sum of financial, social and privsec values
+
+  set total_financial 0
+  ask contracts [
+    set total_financial total_financial + financial]
+
+  set total_social_gains 0
+  ask contracts [
+    set total_social_gains total_social_gains + social]
+
+  set total_privsec 0
+  ask contracts [
+    set total_privsec total_privsec + privsec]
+
+end
+
+to calculate_number_of_consumers
+
+  set total_consumers_RTP 0
+  ask contracts with [contracttype = "RTP"][
+      set total_consumers_RTP amount_of_consumers]
+
+  set total_consumers_CPP 0
+  ask contracts with [contracttype = "CPP"][
+      set total_consumers_CPP amount_of_consumers]
+
+  set total_consumers_ToU 0
+  ask contracts with [contracttype = "ToU"][
+      set total_consumers_RTP amount_of_consumers]
+
+  set total_consumers_RTPH 0
+  ask contracts with [contracttype = "RTPH"][
+      set total_consumers_RTPH amount_of_consumers]
+
+end
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+8
 10
-649
+447
 470
 16
 16
@@ -412,10 +462,10 @@ ticks
 30.0
 
 BUTTON
-129
-59
-192
-92
+468
+17
+531
+50
 NIL
 setup
 NIL
@@ -429,10 +479,10 @@ NIL
 1
 
 BUTTON
-40
-51
-103
-84
+546
+17
+609
+50
 NIL
 go
 T
@@ -446,34 +496,411 @@ NIL
 0
 
 SLIDER
-715
-28
-1083
-61
+632
+11
+1000
+44
 percentage_unresponsive_consumers
 percentage_unresponsive_consumers
 0.4
 .6
-0.6
+0.51
 0.01
 1
 NIL
 HORIZONTAL
 
 SLIDER
-746
-96
-947
-129
+632
+46
+833
+79
 infostrategy_increasevalue
 infostrategy_increasevalue
 0
 5
-4.4
+2.5
 0.1
 1
 NIL
 HORIZONTAL
+
+TEXTBOX
+637
+114
+718
+132
+Real Time Pricing
+11
+0.0
+1
+
+INPUTBOX
+627
+133
+732
+193
+RTP_financial
+0.8
+1
+0
+Number
+
+INPUTBOX
+627
+192
+732
+254
+RTP_social_gains
+0.4
+1
+0
+Number
+
+INPUTBOX
+627
+253
+733
+313
+RTP_environmental
+0.6
+1
+0
+Number
+
+INPUTBOX
+627
+311
+732
+371
+RTP_privsec
+0.2
+1
+0
+Number
+
+INPUTBOX
+627
+371
+731
+431
+RTP_usability
+0.2
+1
+0
+Number
+
+INPUTBOX
+731
+133
+836
+193
+CPP_financial
+0.4
+1
+0
+Number
+
+INPUTBOX
+731
+191
+836
+251
+CPP_social_gains
+0.6
+1
+0
+Number
+
+INPUTBOX
+730
+250
+836
+310
+CPP_environmental
+0.2
+1
+0
+Number
+
+INPUTBOX
+730
+308
+836
+370
+CPP_privsec
+0.4
+1
+0
+Number
+
+INPUTBOX
+730
+367
+837
+427
+CPP_usability
+0.8
+1
+0
+Number
+
+TEXTBOX
+735
+112
+850
+130
+Critical Peak Pricing
+11
+0.0
+1
+
+INPUTBOX
+470
+163
+606
+223
+Low_Income_Households
+0.2
+1
+0
+Number
+
+INPUTBOX
+470
+222
+606
+282
+Young_Families
+0.2
+1
+0
+Number
+
+INPUTBOX
+470
+281
+606
+341
+Environmentalists
+0.2
+1
+0
+Number
+
+INPUTBOX
+471
+341
+606
+401
+Techies
+0.2
+1
+0
+Number
+
+INPUTBOX
+471
+400
+606
+460
+Neutrals
+0.2
+1
+0
+Number
+
+TEXTBOX
+466
+142
+616
+160
+Percentage Consumer Groups
+11
+0.0
+1
+
+INPUTBOX
+457
+63
+621
+123
+Total_Number_of_Households
+3000
+1
+0
+Number
+
+PLOT
+1081
+10
+1479
+234
+Development of Contract Specifications
+time
+Sum from all contracts
+0.0
+10.0
+0.0
+3.0
+true
+true
+"" ""
+PENS
+"Financial gains" 1.0 0 -955883 true "" "plot total_financial"
+"Social gains" 1.0 0 -2064490 true "" "plot total_social_gains"
+"Privacy and security" 1.0 0 -8630108 true "" "plot total_privsec"
+
+PLOT
+1074
+242
+1485
+476
+Number of Consumers per Contract
+time
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"RTP" 1.0 0 -1184463 true "" "plot total_consumers_RTP"
+"CPP" 1.0 0 -13840069 true "" "plot total_consumers_CPP"
+"ToU" 1.0 0 -6459832 true "" "plot total_consumers_ToU"
+"CPP with HA" 1.0 0 -2674135 true "" "plot total_consumers_RTPH"
+
+INPUTBOX
+835
+132
+945
+192
+ToU_financial
+0.2
+1
+0
+Number
+
+INPUTBOX
+834
+191
+944
+251
+ToU_social_gains
+0.6
+1
+0
+Number
+
+INPUTBOX
+835
+250
+944
+310
+ToU_environmental
+0.4
+1
+0
+Number
+
+INPUTBOX
+835
+309
+944
+369
+ToU_privsec
+0.2
+1
+0
+Number
+
+INPUTBOX
+835
+368
+945
+428
+ToU_usability
+0.8
+1
+0
+Number
+
+INPUTBOX
+944
+132
+1069
+192
+CPP_HA_financial
+0.8
+1
+0
+Number
+
+INPUTBOX
+942
+191
+1069
+251
+CPP_HA_social_gains
+0.2
+1
+0
+Number
+
+INPUTBOX
+943
+250
+1069
+310
+CPP_HA_environmental
+0.8
+1
+0
+Number
+
+INPUTBOX
+943
+309
+1068
+369
+CPP_HA_privsec
+0
+1
+0
+Number
+
+INPUTBOX
+944
+368
+1068
+428
+CPP_HA_usability
+0.8
+1
+0
+Number
+
+TEXTBOX
+844
+111
+922
+129
+Time of Use
+11
+0.0
+1
+
+TEXTBOX
+953
+100
+1061
+128
+Time of Use with \nHome Automation
+11
+0.0
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -818,7 +1245,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.2.1
+NetLogo 5.3
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

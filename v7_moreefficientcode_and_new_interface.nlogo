@@ -46,18 +46,18 @@ to setup
 end
 
 to setup-contracts
-  create-contracts 1 [set contracttype "RTP" set flexibility 2 set financial RTP_financial set social RTP_social_gains set environmental RTP_environmental set privsec RTP_privsec set usability RTP_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
-  create-contracts 1 [set contracttype "CPP" set flexibility 3 set financial CPP_financial set social CPP_social_gains set environmental CPP_environmental set privsec CPP_privsec set usability CPP_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
-  create-contracts 1 [set contracttype "ToU" set flexibility 4 set financial ToU_financial set social ToU_social_gains set environmental ToU_environmental set privsec ToU_privsec set usability ToU_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
-  create-contracts 1 [set contracttype "RTPH" set flexibility 1 set financial CPP_HA_financial set social CPP_HA_social_gains set environmental CPP_HA_environmental set privsec CPP_HA_privsec set usability CPP_HA_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0]
+  create-contracts 1 [set contracttype "RTP" set flexibility 2 set financial RTP_financial set social RTP_social_gains set environmental RTP_environmental set privsec RTP_privsec set usability RTP_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0 set color black]
+  create-contracts 1 [set contracttype "CPP" set flexibility 3 set financial CPP_financial set social CPP_social_gains set environmental CPP_environmental set privsec CPP_privsec set usability CPP_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0 set color black]
+  create-contracts 1 [set contracttype "ToU" set flexibility 4 set financial ToU_financial set social ToU_social_gains set environmental ToU_environmental set privsec ToU_privsec set usability ToU_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0 set color black]
+  create-contracts 1 [set contracttype "RTPH" set flexibility 1 set financial RTP_HA_financial set social RTP_HA_social_gains set environmental RTP_HA_environmental set privsec RTP_HA_privsec set usability RTP_HA_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0 set color black]
 end
 
 to setup-consumers ;this has changed so that now you can set the total number of consumers and the percentages of the different consumer profiles at the interface
-  create-consumers total_number_of_consumers * Low_Income_Households [ set consumer_profile "LIH" set egoistic 5 set hedonic 2 set biospheric 4 set altruistic 3 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
-  create-consumers total_number_of_consumers * Young_Families [ set consumer_profile "YMCF" set egoistic 2 set hedonic 5 set biospheric 3 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
-  create-consumers total_number_of_consumers * Environmentalists [ set consumer_profile "environmentalist" set egoistic 3 set hedonic 2 set biospheric 5 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
-  create-consumers total_number_of_consumers * Techies [ set consumer_profile "techie" set egoistic 3 set hedonic 4 set biospheric 1 set altruistic 2 set techacc 5 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
-  create-consumers total_number_of_consumers * Neutrals [ set consumer_profile "neutral" set egoistic 3 set hedonic 3 set biospheric 3 set altruistic 3 set techacc 3 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true]
+  create-consumers total_number_of_consumers * Low_Income_Households [ set consumer_profile "LIH" set egoistic 5 set hedonic 2 set biospheric 4 set altruistic 3 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color lime]
+  create-consumers total_number_of_consumers * Young_Families [ set consumer_profile "YMCF" set egoistic 2 set hedonic 5 set biospheric 3 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color pink]
+  create-consumers total_number_of_consumers * Environmentalists [ set consumer_profile "environmentalist" set egoistic 3 set hedonic 2 set biospheric 5 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color orange]
+  create-consumers total_number_of_consumers * Techies [ set consumer_profile "techie" set egoistic 3 set hedonic 4 set biospheric 1 set altruistic 2 set techacc 5 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color sky]
+  create-consumers total_number_of_consumers * Neutrals [ set consumer_profile "neutral" set egoistic 3 set hedonic 3 set biospheric 3 set altruistic 3 set techacc 3 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color violet]
 
   ask consumers with [consumer_profile = "LIH"][
     set info_strategy_response 1]
@@ -102,7 +102,7 @@ to setup-patches
     set plabel-color black
   ]
   ask patches with [pycor = -8 and pxcor = -8] [
-    set plabel "Critical-Peak Pricing"
+    set plabel "Real Time Pricing"
     set plabel-color black
   ]
   ask patches with [pycor = -9 and pxcor = -8] [
@@ -148,7 +148,7 @@ to initialcalculateconsumercontracts
     [ifelse(CPPscore = highest)[
       set chosen_contract "CPP"]
     [ifelse(ToUscore = highest)[
-      set chosen_contract "TOU"]
+      set chosen_contract "ToU"]
     [ifelse(RTPHscore = highest)[
       set chosen_contract "RTPH"]
     [show "something is wrong"]]]]]
@@ -183,10 +183,11 @@ to calculatemarketshare
     [ifelse(chosen_contract = "RTPH")[
       ask contracts with [contracttype = "RTPH"][
         set amount_of_consumers amount_of_consumers + 1]]
-    [show "No contract is chosen"]]]]
-  ]
+    [show "No contract is chosen so no amount of consumers can be set per contracttype"]]]]
+    ]
 
   ask contracts [
+    type "for " type contracttype type " amount of consumers is " print amount_of_consumers
     set marketshare amount_of_consumers / total_number_of_consumers
   ]
 
@@ -203,6 +204,7 @@ to apply_information_or_market_strategy
     let minimum_marketshare [marketshare] of min-one-of contracts [marketshare]
     ask contracts[
       type "The marketshare of contract " type contracttype type " is " print marketshare
+      type "The infostrategy implemented is " print information_strategy
       if (marketshare = minimum_marketshare)[
         set contract_under_consideration contracttype
         type "The minimum marketshare is now " print "minimum"
@@ -217,8 +219,10 @@ to apply_information_or_market_strategy
         update_contract
         ;update_contract financial dan moet je bij de funcite update_contract [variable]
         ;TODO so he is already in the contract underconsideration this will never close in the subfunction below
-        ]]]
+        ]]
 
+  ask contracts with [contracttype != contract_under_consideration][
+    set information_strategy 0]]
 
 end
 
@@ -375,7 +379,7 @@ to calculateconsumerchoices
     [ifelse(CPPscore = highest)[
       set chosen_contract "CPP"]
     [ifelse(ToUscore = highest)[
-      set chosen_contract "TOU"]
+      set chosen_contract "ToU"]
     [ifelse(RTPHscore = highest)[
       set chosen_contract "RTPH"]
     [show "error in string chosen_contract"]]]]]
@@ -393,8 +397,8 @@ to move-turtles
       set heading towards one-of area-c]
     [ifelse (chosen_contract = "RTPH")
       [set heading towards one-of area-d]
-      [print "er is geen enkel contract gekozen"]]]]
-    fd 2]
+      [print "no contract is chosen so turtles can not move"]]]]
+    fd 1]
 end
 
 to calculate_totals_contract_specifications ;for each run it calculates the contracts' total sum of financial, social and privsec values
@@ -425,14 +429,13 @@ to calculate_number_of_consumers
 
   set total_consumers_ToU 0
   ask contracts with [contracttype = "ToU"][
-      set total_consumers_RTP amount_of_consumers]
+      set total_consumers_ToU amount_of_consumers]
 
   set total_consumers_RTPH 0
   ask contracts with [contracttype = "RTPH"][
       set total_consumers_RTPH amount_of_consumers]
 
 end
-
 
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -542,7 +545,7 @@ INPUTBOX
 732
 193
 RTP_financial
-0.8
+0.6
 1
 0
 Number
@@ -619,7 +622,7 @@ INPUTBOX
 836
 310
 CPP_environmental
-0.2
+0.4
 1
 0
 Number
@@ -641,7 +644,7 @@ INPUTBOX
 837
 427
 CPP_usability
-0.8
+0.6
 1
 0
 Number
@@ -771,7 +774,7 @@ PENS
 "RTP" 1.0 0 -1184463 true "" "plot total_consumers_RTP"
 "CPP" 1.0 0 -13840069 true "" "plot total_consumers_CPP"
 "ToU" 1.0 0 -6459832 true "" "plot total_consumers_ToU"
-"CPP with HA" 1.0 0 -2674135 true "" "plot total_consumers_RTPH"
+"RTP with HA" 1.0 0 -2674135 true "" "plot total_consumers_RTPH"
 
 INPUTBOX
 835
@@ -790,7 +793,7 @@ INPUTBOX
 944
 251
 ToU_social_gains
-0.6
+0.2
 1
 0
 Number
@@ -801,7 +804,7 @@ INPUTBOX
 944
 310
 ToU_environmental
-0.4
+0.2
 1
 0
 Number
@@ -812,7 +815,7 @@ INPUTBOX
 944
 369
 ToU_privsec
-0.2
+0.8
 1
 0
 Number
@@ -833,7 +836,7 @@ INPUTBOX
 132
 1069
 192
-CPP_HA_financial
+RTP_HA_financial
 0.8
 1
 0
@@ -844,8 +847,8 @@ INPUTBOX
 191
 1069
 251
-CPP_HA_social_gains
-0.2
+RTP_HA_social_gains
+0.8
 1
 0
 Number
@@ -855,7 +858,7 @@ INPUTBOX
 250
 1069
 310
-CPP_HA_environmental
+RTP_HA_environmental
 0.8
 1
 0
@@ -866,7 +869,7 @@ INPUTBOX
 309
 1068
 369
-CPP_HA_privsec
+RTP_HA_privsec
 0
 1
 0
@@ -877,7 +880,7 @@ INPUTBOX
 368
 1068
 428
-CPP_HA_usability
+RTP_HA_usability
 0.8
 1
 0
@@ -898,7 +901,7 @@ TEXTBOX
 100
 1061
 128
-Time of Use with \nHome Automation
+Real Time Pricing with \nHome Automation
 11
 0.0
 1
@@ -1246,7 +1249,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.3
+NetLogo 5.2.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

@@ -18,11 +18,19 @@ globals[
   total_financial
   total_social_gains
   total_privsec
+  total_financial_correctedbymarketshare
+  total_social_gains_correctedbymarketshare
+  total_privsec_correctedbymarketshare
 
   total_consumers_RTP
   total_consumers_CPP
   total_consumers_ToU
   total_consumers_RTPH
+
+  info_RTP
+  info_CPP
+  info_ToU
+  info_RTPH
 
 ]
 
@@ -46,10 +54,10 @@ to setup
 end
 
 to setup-contracts
-  create-contracts 1 [set contracttype "RTP" set flexibility 2 set financial RTP_financial set social RTP_social_gains set environmental RTP_environmental set privsec RTP_privsec set usability RTP_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0 set color black]
-  create-contracts 1 [set contracttype "CPP" set flexibility 3 set financial CPP_financial set social CPP_social_gains set environmental CPP_environmental set privsec CPP_privsec set usability CPP_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0 set color black]
-  create-contracts 1 [set contracttype "ToU" set flexibility 4 set financial ToU_financial set social ToU_social_gains set environmental ToU_environmental set privsec ToU_privsec set usability ToU_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0 set color black]
-  create-contracts 1 [set contracttype "RTPH" set flexibility 1 set financial RTP_HA_financial set social RTP_HA_social_gains set environmental RTP_HA_environmental set privsec RTP_HA_privsec set usability RTP_HA_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0 set color black]
+  create-contracts 1 [set contracttype "RTP" set flexibility 2 set financial RTP_financial set social RTP_social_gains set environmental RTP_environmental set privsec RTP_privsec set usability RTP_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0 set hidden? true]
+  create-contracts 1 [set contracttype "CPP" set flexibility 3 set financial CPP_financial set social CPP_social_gains set environmental CPP_environmental set privsec CPP_privsec set usability CPP_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0 set hidden? true]
+  create-contracts 1 [set contracttype "ToU" set flexibility 4 set financial ToU_financial set social ToU_social_gains set environmental ToU_environmental set privsec ToU_privsec set usability ToU_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0 set hidden? true]
+  create-contracts 1 [set contracttype "RTPH" set flexibility 1 set financial RTP_HA_financial set social RTP_HA_social_gains set environmental RTP_HA_environmental set privsec RTP_HA_privsec set usability RTP_HA_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0 set hidden? true]
 end
 
 to setup-consumers ;this has changed so that now you can set the total number of consumers and the percentages of the different consumer profiles at the interface
@@ -162,7 +170,9 @@ to go
   calculateconsumerchoices
   move-turtles
   calculate_totals_contract_specifications ;this calculates the sums for the contract specifications to plot it in the graph
+  calculate_totals_contract_specifications_correctedbymarketshare ; this calculates the sum for the contract specification corrected by marketshares to plot it in the graph
   calculate_number_of_consumers ;this calculates the total of consumers per contract to plot it in the graph
+  calculate_infostrategies_forplot
   tick
 end
 
@@ -187,7 +197,6 @@ to calculatemarketshare
     ]
 
   ask contracts [
-    type "for " type contracttype type " amount of consumers is " print amount_of_consumers
     set marketshare amount_of_consumers / total_number_of_consumers
   ]
 
@@ -208,7 +217,6 @@ to apply_information_or_market_strategy
       if (marketshare = minimum_marketshare)[
         set contract_under_consideration contracttype
         type "The minimum marketshare is now " print "minimum"
-        ;TO DO what if two contracts are the minimum. Or does he picks everytime at ask contracts another order?
         ]]
 
     ask contracts with [contracttype = contract_under_consideration][
@@ -253,7 +261,7 @@ to update_contract
         type "financial: " print financial
         type "privsec: " print privsec
         type "social gain: " print social
-        ;TO DO what if multiple contract have the highest marketshare. Probably this is already chosen randomly, because with ask contract always a different order
+
         ifelse (financial > social)[
           set highestvalue financial
           set value_to_change "financial"]
@@ -417,6 +425,49 @@ to calculate_totals_contract_specifications ;for each run it calculates the cont
 
 end
 
+to calculate_totals_contract_specifications_correctedbymarketshare ;for each run it calculates the contracts' total sum of financial, social and privsec values corrected by the marketshares
+
+  set total_financial_correctedbymarketshare 0
+  ask contracts [
+    if (marketshare != 0)[
+      set total_financial_correctedbymarketshare total_financial_correctedbymarketshare + (financial / marketshare)]
+  ]
+
+  set total_social_gains_correctedbymarketshare 0
+  ask contracts [
+    if (marketshare != 0)[
+    set total_social_gains_correctedbymarketshare total_social_gains_correctedbymarketshare + (social / marketshare)]
+  ]
+
+  set total_privsec_correctedbymarketshare 0
+  ask contracts [
+    if (marketshare != 0)[
+    set total_privsec_correctedbymarketshare total_privsec_correctedbymarketshare + (privsec / marketshare)]
+  ]
+
+end
+
+to calculate_infostrategies_forplot
+  set info_RTP 0
+  set info_CPP 0
+  set info_ToU 0
+  set info_RTPH 0
+  ask contracts with [contracttype = "RTP"][
+    set info_RTP information_strategy
+  ]
+  ask contracts with [contracttype = "CPP"][
+    set info_CPP information_strategy
+  ]
+  ask contracts with [contracttype = "ToU"][
+    set info_ToU information_strategy
+  ]
+  ask contracts with [contracttype = "RTPH"][
+    set info_RTPH information_strategy
+  ]
+end
+
+
+
 to calculate_number_of_consumers
 
   set total_consumers_RTP 0
@@ -436,7 +487,6 @@ to calculate_number_of_consumers
       set total_consumers_RTPH amount_of_consumers]
 
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 8
@@ -523,7 +573,7 @@ infostrategy_increasevalue
 infostrategy_increasevalue
 0
 5
-2.5
+2
 0.1
 1
 NIL
@@ -754,6 +804,9 @@ PENS
 "Financial gains" 1.0 0 -955883 true "" "plot total_financial"
 "Social gains" 1.0 0 -2064490 true "" "plot total_social_gains"
 "Privacy and security" 1.0 0 -8630108 true "" "plot total_privsec"
+"Financial corrected" 1.0 0 -7500403 true "" "plot total_financial_correctedbymarketshare"
+"social corrected" 1.0 0 -2674135 true "" "plot total_social_gains_correctedbymarketshare"
+"privsec corrected" 1.0 0 -6459832 true "" "plot total_privsec_correctedbymarketshare"
 
 PLOT
 1074
@@ -905,6 +958,27 @@ Real Time Pricing with \nHome Automation
 11
 0.0
 1
+
+PLOT
+1492
+14
+1798
+190
+Information Strategies
+time
+Information Strategy
+0.0
+10.0
+0.0
+3.0
+true
+true
+"" ""
+PENS
+"RTP" 1.0 0 -1184463 true "" "plot info_RTP"
+"CPP" 1.0 0 -10899396 true "" "plot info_CPP"
+"ToU" 1.0 0 -6459832 true "" "plot info_ToU"
+"RTP with HA" 1.0 0 -2674135 true "" "plot info_RTPH"
 
 @#$#@#$#@
 ## WHAT IS IT?

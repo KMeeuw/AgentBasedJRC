@@ -43,13 +43,13 @@ contracts-own [contracttype flexibility financial social environmental privsec u
 
 to setup
   clear-all
-  set total_number_of_consumers Total_Number_of_Households ;sets the total_number_of_consumers to the value from the interface input
-  set number_of_responsive_consumers (1 - percentage_unresponsive_consumers ) * total_number_of_consumers ;calculates the number of responsive consumers from all the interfact inputs
+  set number_of_responsive_consumers (1 - percentage_unresponsive_consumers ) * Total_Number_of_Households ;calculates the number of responsive consumers from all the interfact inputs
   setup-contracts
   if (Low_Income_Households + Young_Families + Environmentalists + Techies + Neutrals != 1) [print "Percentages of consumer groups don't add up to 1!!"] ;check that the input of the consumer groups percentages is correct
   setup-consumers
   setup-patches
   initialcalculateconsumercontracts
+  set total_number_of_consumers count consumers
   reset-ticks
 end
 
@@ -61,11 +61,11 @@ to setup-contracts
 end
 
 to setup-consumers ;this has changed so that now you can set the total number of consumers and the percentages of the different consumer profiles at the interface
-  create-consumers total_number_of_consumers * Low_Income_Households [ set consumer_profile "LIH" set egoistic 5 set hedonic 2 set biospheric 4 set altruistic 3 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color lime]
-  create-consumers total_number_of_consumers * Young_Families [ set consumer_profile "YMCF" set egoistic 2 set hedonic 5 set biospheric 3 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color pink]
-  create-consumers total_number_of_consumers * Environmentalists [ set consumer_profile "environmentalist" set egoistic 3 set hedonic 2 set biospheric 5 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color orange]
-  create-consumers total_number_of_consumers * Techies [ set consumer_profile "techie" set egoistic 3 set hedonic 4 set biospheric 1 set altruistic 2 set techacc 5 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color sky]
-  create-consumers total_number_of_consumers * Neutrals [ set consumer_profile "neutral" set egoistic 3 set hedonic 3 set biospheric 3 set altruistic 3 set techacc 3 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color violet]
+  create-consumers Total_Number_of_Households * Low_Income_Households [ set consumer_profile "LIH" set egoistic 5 set hedonic 2 set biospheric 4 set altruistic 3 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color lime]
+  create-consumers Total_Number_of_Households * Young_Families [ set consumer_profile "YMCF" set egoistic 2 set hedonic 5 set biospheric 3 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color pink]
+  create-consumers Total_Number_of_Households * Environmentalists [ set consumer_profile "environmentalist" set egoistic 3 set hedonic 2 set biospheric 5 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color orange]
+  create-consumers Total_Number_of_Households * Techies [ set consumer_profile "techie" set egoistic 3 set hedonic 4 set biospheric 1 set altruistic 2 set techacc 5 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color sky]
+  create-consumers Total_Number_of_Households * Neutrals [ set consumer_profile "neutral" set egoistic 3 set hedonic 3 set biospheric 3 set altruistic 3 set techacc 3 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color violet]
 
   ask consumers with [consumer_profile = "LIH"][
     set info_strategy_response 1]
@@ -199,9 +199,11 @@ to calculatemarketshare
     [show "No contract is chosen so no amount of consumers can be set per contracttype"]]]]
     ]
 
+if(total_number_of_consumers != 0)[
   ask contracts [
     set marketshare amount_of_consumers / total_number_of_consumers
   ]
+]
 
 end
 
@@ -359,7 +361,7 @@ to calculateconsumerchoices
     ask consumers with [responsiveness = true][
       set RTPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
       if ([information_strategy] of myself = info_strategy_response)[
-        set CPPscore CPPscore + infostrategy_increasevalue]
+        set RTPscore RTPscore + infostrategy_increasevalue]
     ]]
   ask contracts with [contracttype = "CPP"][
     ask consumers with [responsiveness = true][
@@ -371,13 +373,13 @@ to calculateconsumerchoices
     ask consumers with [responsiveness = true][
       set ToUscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
       if ([information_strategy] of myself = info_strategy_response)[
-        set CPPscore CPPscore + infostrategy_increasevalue]
+        set ToUscore ToUscore + infostrategy_increasevalue]
     ]]
   ask contracts with [contracttype = "RTPH"][
     ask consumers with [responsiveness = true][
       set RTPHscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
       if ([information_strategy] of myself = info_strategy_response)[
-        set CPPscore CPPscore + infostrategy_increasevalue]
+        set RTPHscore RTPHscore + infostrategy_increasevalue]
     ]]
 
 

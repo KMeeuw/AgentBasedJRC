@@ -50,7 +50,7 @@ to setup
   setup-patches
   initialcalculateconsumercontracts
   set total_number_of_consumers count consumers
-  print total_number_of_consumers
+  type "Initial total number of consumers" print total_number_of_consumers
   reset-ticks
 end
 
@@ -175,7 +175,7 @@ to go
   calculate_totals_contract_specifications_correctedbymarketshare ; this calculates the sum for the contract specification corrected by marketshares to plot it in the graph
   calculate_number_of_consumers ;this calculates the total of consumers per contract to plot it in the graph
   calculate_infostrategies_forplot
-  print total_number_of_consumers
+  type "Total number of consumers after a tick " print total_number_of_consumers
   tick
   if (ticks = 60)[
     stop]
@@ -183,13 +183,15 @@ end
 
 to single-agent-test
   clear-all
-  set total_number_of_consumers 5
-  set number_of_responsive_consumers (1 - percentage_unresponsive_consumers ) * total_number_of_consumers ;calculates the number of responsive consumers from all the interfact inputs
+  set Total_Number_of_Households 5
+  set number_of_responsive_consumers (1 - percentage_unresponsive_consumers ) * Total_Number_of_Households ;calculates the number of responsive consumers from all the interfact inputs
   setup-contracts
   if (Low_Income_Households + Young_Families + Environmentalists + Techies + Neutrals != 1) [print "Percentages of consumer groups don't add up to 1!!"] ;check that the input of the consumer groups percentages is correct
   setup-consumers
   setup-patches
   initialcalculateconsumercontracts
+  set total_number_of_consumers count consumers
+  type "Initial total number of consumers" print total_number_of_consumers
   ask Consumers[
     print consumer_profile
     type"RTPscore is "  print RTPscore
@@ -217,6 +219,22 @@ ask Consumers[
 
 end
 
+to minimal-model-test
+  single-agent-test
+  type "Number of ticks are now " print ticks
+  go
+  type "Number of ticks are now " print ticks
+  go
+  type "Number of ticks are now " print ticks
+  go
+  type "Number of ticks are now " print ticks
+  go
+  ask Contracts[
+    type contracttype
+    type " applies information strategy " print information_strategy
+  ]
+
+end
 
 
 to calculatemarketshare
@@ -259,7 +277,7 @@ to apply_information_or_market_strategy
       type "The infostrategy implemented is " print information_strategy
       if (marketshare = minimum_marketshare)[
         set contract_under_consideration contracttype
-        type "The minimum marketshare is now " print "minimum"
+        type "The minimum marketshare is now " print minimum_marketshare
         ]]
 
     ask contracts with [contracttype = contract_under_consideration][
@@ -279,7 +297,8 @@ end
 
 to update_infostrategy
   ask contracts with [contracttype = contract_under_consideration][
-    set information_strategy random (3) + 1]
+    set information_strategy random (3) + 1
+    type "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!information strategy used is " print information_strategy]
 end
 
 to update_contract
@@ -400,24 +419,28 @@ to calculateconsumerchoices
       set RTPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
       if ([information_strategy] of myself = info_strategy_response)[
         set RTPscore RTPscore + infostrategy_increasevalue]
+      type consumer_profile type " RTPscore is " print RTPscore
     ]]
   ask contracts with [contracttype = "CPP"][
     ask consumers with [responsiveness = true][
       set CPPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
       if ([information_strategy] of myself = info_strategy_response)[
         set CPPscore CPPscore + infostrategy_increasevalue]
+      type consumer_profile type " CPPscore is " print CPPscore
     ]]
   ask contracts with [contracttype = "ToU"][
     ask consumers with [responsiveness = true][
       set ToUscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
       if ([information_strategy] of myself = info_strategy_response)[
         set ToUscore ToUscore + infostrategy_increasevalue]
+      type consumer_profile type " ToUscore is " print ToUscore
     ]]
   ask contracts with [contracttype = "RTPH"][
     ask consumers with [responsiveness = true][
       set RTPHscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
       if ([information_strategy] of myself = info_strategy_response)[
         set RTPHscore RTPHscore + infostrategy_increasevalue]
+      type consumer_profile type " RTPHscore is " print RTPHscore
     ]]
 
 
@@ -823,7 +846,7 @@ INPUTBOX
 621
 123
 Total_Number_of_Households
-3000
+5
 1
 0
 Number
@@ -1030,6 +1053,23 @@ BUTTON
 474
 NIL
 single-agent-test\n
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+912
+440
+1046
+473
+NIL
+minimal-model-test
 NIL
 1
 T

@@ -221,7 +221,7 @@ to apply_information_or_market_strategy
       type "The infostrategy implemented is " print information_strategy
       if (marketshare = minimum_marketshare)[
         set contract_under_consideration contracttype
-        type "The minimum marketshare is now " print "minimum"
+        type "The minimum marketshare is now " print minimum_marketshare
         ]]
 
     ask contracts with [contracttype = contract_under_consideration][

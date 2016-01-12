@@ -12,9 +12,7 @@ globals[
   checksum_total_sum_marketshares
   number_of_responsive_consumers
   contract_under_consideration
-  highestvalue
-  value_to_change
-  counter
+
   total_financial
   total_social_gains
   total_privsec
@@ -31,6 +29,11 @@ globals[
   info_CPP
   info_ToU
   info_RTPH
+
+  marketshare_RTP
+  marketshare_CPP
+  marketshare_ToU
+  marketshare_RTPH
 
 ]
 
@@ -60,16 +63,17 @@ to setup-contracts
   create-contracts 1 [set contracttype "RTPH" set flexibility 1 set financial RTP_HA_financial set social RTP_HA_social_gains set environmental RTP_HA_environmental set privsec RTP_HA_privsec set usability RTP_HA_usability set amount_of_consumers 0 set marketshare 0 set information_strategy 0 set hidden? true]
 end
 
-to setup-consumers ;this has changed so that now you can set the total number of consumers and the percentages of the different consumer profiles at the interface
+to setup-consumers
   create-consumers Total_Number_of_Households * Low_Income_Households [ set consumer_profile "LIH" set egoistic 5 set hedonic 2 set biospheric 4 set altruistic 3 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color lime]
   create-consumers Total_Number_of_Households * Young_Families [ set consumer_profile "YMCF" set egoistic 2 set hedonic 5 set biospheric 3 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color pink]
   create-consumers Total_Number_of_Households * Environmentalists [ set consumer_profile "environmentalist" set egoistic 3 set hedonic 2 set biospheric 5 set altruistic 4 set techacc 1 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color orange]
   create-consumers Total_Number_of_Households * Techies [ set consumer_profile "techie" set egoistic 3 set hedonic 4 set biospheric 1 set altruistic 2 set techacc 5 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color sky]
   create-consumers Total_Number_of_Households * Neutrals [ set consumer_profile "neutral" set egoistic 3 set hedonic 3 set biospheric 3 set altruistic 3 set techacc 3 set RTPscore 0 set CPPscore 0 set ToUscore 0 set RTPHscore 0 set info_strategy_response 0 set responsiveness true set color violet]
 
+  ; the settings below here are there to specify on which information strategy which type of consumers will react
   ask consumers with [consumer_profile = "LIH"][
     set info_strategy_response 1]
-  let x 0.5 * total_number_of_consumers * Low_Income_Households ;this had to be adapted because now the percentage of the consumer profiles is an input
+  let x 0.5 * total_number_of_consumers * Low_Income_Households
   ask n-of x consumers with [consumer_profile = "LIH"][
     set info_strategy_response 2]
 
@@ -90,33 +94,28 @@ to setup-consumers ;this has changed so that now you can set the total number of
   let w 0.25 * total_number_of_consumers * Techies
   ask n-of w consumers with [consumer_profile = "techie"][
     set info_strategy_response 3]
-
 end
 
+; this is to illustrate the changes in choices of consumer with an animation
 to setup-patches
   let borders patches with [pxcor = 0 or pycor = 0]
   ask borders [
     set pcolor white ]
   ask patches with [pycor = 8 and pxcor = 8] [
     set plabel "Critical-Peak Pricing"
-    set plabel-color black
-  ]
+    set plabel-color black]
   ask patches with [pycor = 8 and pxcor = -8] [
     set plabel "Real-Time Pricing"
-    set plabel-color black
-  ]
+    set plabel-color black]
   ask patches with [pycor = -8 and pxcor = 8] [
     set plabel "Time of Use"
-    set plabel-color black
-  ]
+    set plabel-color black]
   ask patches with [pycor = -8 and pxcor = -8] [
     set plabel "Real Time Pricing"
-    set plabel-color black
-  ]
+    set plabel-color black]
   ask patches with [pycor = -9 and pxcor = -8] [
     set plabel "with home automation"
-    set plabel-color black
-  ]
+    set plabel-color black]
 
   set area-a patches with [pxcor < 0 and pycor > 0]
   set area-b patches with [pxcor > 0 and pycor > 0]
@@ -130,7 +129,6 @@ to setup-patches
 end
 
 to initialcalculateconsumercontracts
-
   ask contracts with [contracttype = "RTP"][
     ask Consumers[
       set RTPscore [financial] of myself * egoistic + [social] of myself * altruistic + [environmental] of myself * biospheric + [privsec] of myself * techacc + [usability] of myself * hedonic
@@ -151,20 +149,24 @@ to initialcalculateconsumercontracts
   ask Consumers[
     let test (list RTPscore CPPscore ToUscore RTPHscore)
     let highest max test
-    ifelse(RTPscore = highest)[
-      set chosen_contract "RTP"]
-    [ifelse(CPPscore = highest)[
-      set chosen_contract "CPP"]
-    [ifelse(ToUscore = highest)[
-      set chosen_contract "ToU"]
-    [ifelse(RTPHscore = highest)[
-      set chosen_contract "RTPH"]
-    [show "something is wrong"]]]]]
+    let maximumlist [] ;this list is there to ensure that also when multiple contracts have the highest score, randomly one out of them will be chosen
+    let numberofmax 0
+    if(RTPscore = highest)[
+      set numberofmax numberofmax + 1
+      set maximumlist lput "RTP" maximumlist ]
+    if(CPPscore = highest)[
+      set numberofmax numberofmax + 1
+      set maximumlist lput "CPP" maximumlist ]
+    if(ToUscore = highest)[
+      set numberofmax numberofmax + 1
+      set maximumlist lput "ToU" maximumlist ]
+    if(RTPHscore = highest)[
+      set numberofmax numberofmax + 1
+      set maximumlist lput "RTPH" maximumlist ]
+    set chosen_contract item (random (length maximumlist)) maximumlist]
 end
 
-
 to go
-
   set time_count time_count + 1
   calculatemarketshare
   apply_information_or_market_strategy
@@ -173,9 +175,10 @@ to go
   calculate_totals_contract_specifications ;this calculates the sums for the contract specifications to plot it in the graph
   calculate_totals_contract_specifications_correctedbymarketshare ; this calculates the sum for the contract specification corrected by marketshares to plot it in the graph
   calculate_number_of_consumers ;this calculates the total of consumers per contract to plot it in the graph
-  calculate_infostrategies_forplot
+  calculate_infostrategies_forplot ;this calculates the different information strategies used to plot it in the graph
+  calculate_marketshare_per_contract ;this calculates the marketshares per contract to plot it in the graph
   tick
-  if (ticks = 60)[
+  if (ticks = 60)[ ;The simulation stops after 5 years
     stop]
 end
 
@@ -197,46 +200,31 @@ to calculatemarketshare
       ask contracts with [contracttype = "RTPH"][
         set amount_of_consumers amount_of_consumers + 1]]
     [show "No contract is chosen so no amount of consumers can be set per contracttype"]]]]
-    ]
-
-if(total_number_of_consumers != 0)[
-  ask contracts [
-    set marketshare amount_of_consumers / total_number_of_consumers
   ]
-]
 
+  if(total_number_of_consumers != 0)[ ;to prevent for dividing by zero
+    ask contracts [
+      set marketshare amount_of_consumers / total_number_of_consumers]
+  ]
 end
 
 to apply_information_or_market_strategy
-
-
   set contract_under_consideration ""
-  set counter 0
 
   if (time_count = 3)[
     set time_count 0
     let minimum_marketshare [marketshare] of min-one-of contracts [marketshare]
     ask contracts[
-      type "The marketshare of contract " type contracttype type " is " print marketshare
-      type "The infostrategy implemented is " print information_strategy
       if (marketshare = minimum_marketshare)[
-        set contract_under_consideration contracttype
-        type "The minimum marketshare is now " print minimum_marketshare
-        ]]
+        set contract_under_consideration contracttype]]
 
     ask contracts with [contracttype = contract_under_consideration][
       ifelse (information_strategy = 0)[
-        type "Contract " type contracttype print " will apply infostrategy"
         update_infostrategy]
-      [type "Contract " type contracttype print " will apply marketstrategy"
-        update_contract
-        ;update_contract financial dan moet je bij de funcite update_contract [variable]
-        ;TODO so he is already in the contract underconsideration this will never close in the subfunction below
-        ]]
+      [update_contract]]
 
-  ask contracts with [contracttype != contract_under_consideration][
-    set information_strategy 0]]
-
+    ask contracts with [contracttype != contract_under_consideration][
+      set information_strategy 0]]
 end
 
 to update_infostrategy
@@ -245,58 +233,62 @@ to update_infostrategy
 end
 
 to update_contract
-
-  set highestvalue 0
-  set value_to_change ""
-
-  ask contracts with [contracttype = contract_under_consideration][
-    set information_strategy 0
-    type "The " type contracttype print " is the contract with the LOWEST marketshare and will now update his contractattributes"
-    print  "the old situation is "
-    type "financial: " print financial
-    type "privsec: " print privsec
-    type "social gain: " print social ]
-
-    let maximum_marketshare [marketshare] of max-one-of contracts [marketshare]
-    let minimum2_marketshare [marketshare] of min-one-of contracts [marketshare]
-
-    ask contracts with [contracttype != contract_under_consideration and marketshare != minimum2_marketshare][
-      if (marketshare = maximum_marketshare)[
-        type "The " type contracttype print " is the contract with the HIGHEST marketshare"
-        type "financial: " print financial
-        type "privsec: " print privsec
-        type "social gain: " print social
-
-        ifelse (financial > social)[
-          set highestvalue financial
-          set value_to_change "financial"]
-        [ifelse (financial < social)[
-          set highestvalue social
-          set value_to_change "social"]
-        [ifelse (financial = social)[
-          set value_to_change one-of ["financial" "social"]
-             ifelse (value_to_change = "financial")[
-             set highestvalue financial]
-             [ifelse (value_to_change = "social")[
-             set highestvalue social]
-             [ ]]]
-        [ ]]]
-
-        ifelse (highestvalue < privsec)[
-          set highestvalue privsec
-          set value_to_change "privsec"]
-        [ifelse (highestvalue = privsec)[
-          let change_to_privsec_or_not one-of ["not_privsec" "privsec"]
-          if (change_to_privsec_or_not = "privsec")[
-            set value_to_change "privsec"
-            set highestvalue privsec]]
-        [ ]]
-        ]]
+  let highestvalue 0
+  let value_to_change ""
+  let best_contract ""
 
   ask contracts with [contracttype = contract_under_consideration][
-    type "The value_to_change is: " type value_to_change type " with the value " print highestvalue
+    set information_strategy 0]
+
+  let maximum_marketshare [marketshare] of max-one-of contracts [marketshare]
+  let minimum2_marketshare [marketshare] of min-one-of contracts [marketshare]
+
+  ;to ensure that when two contracts have the highest marketshare only one will be chosen to compare the contract_under_consideration with
+  ask contracts with [contracttype != contract_under_consideration and marketshare = maximum_marketshare][
+    set best_contract contracttype]
+
+  ask contracts with [contracttype = best_contract][
+
+    ;the two blocks below are to investigate which contractattribute has to change (the one with the highest value). Also taken into account the possibility that 2 or 3 of them could have the highest value
+    ifelse (financial > social)[
+      set highestvalue financial
+      set value_to_change "financial"]
+    [ifelse (financial < social)[
+      set highestvalue social
+      set value_to_change "social"]
+    [ifelse (financial = social and financial != privsec)[
+      set value_to_change one-of ["financial" "social"]
+      ifelse (value_to_change = "financial")[
+        set highestvalue financial]
+      [ifelse (value_to_change = "social")[
+        set highestvalue social]
+      [ ]]]
+    [ifelse (financial = social and financial = privsec)[
+      set value_to_change one-of["financial" "social" "privsec"]
+      ifelse (value_to_change = "financial")[
+        set highestvalue financial]
+      [ifelse (value_to_change = "social")[
+        set highestvalue social]
+      [ifelse(value_to_change = "privsec")[
+        set highestvalue privsec]
+      [ ]]]
+    ]
+    [ ]]]]
+
+    ifelse (highestvalue < privsec)[
+      set highestvalue privsec
+      set value_to_change "privsec"]
+    [ifelse (highestvalue = privsec)[
+      let change_to_privsec_or_not one-of ["not_privsec" "privsec"]
+      if (change_to_privsec_or_not = "privsec")[
+        set value_to_change "privsec"
+        set highestvalue privsec]]
+    [ ]]
+  ]
+
+  ask contracts with [contracttype = contract_under_consideration][
+    ;if the social value is going to increase
     ifelse (value_to_change = "social")[
-      type"the financial value is going to change and has the value " print financial
       let old_financial1 financial
       let new_social (social + highestvalue) / 2
       set financial financial - (new_social - social)
@@ -305,9 +297,9 @@ to update_contract
         set financial 0]
       [set social new_social ]]
 
-
+    ;if the privsec value is going to increase
     [ifelse (value_to_change = "privsec")[
-        type"the financial value is going to change and has the value " print financial
+      type"the privse value is going to change and has the value " print privsec
       let old_financial2 financial
       let new_privsec (privsec + highestvalue) / 2
       set financial financial - (new_privsec - privsec)
@@ -316,44 +308,31 @@ to update_contract
         set financial 0]
       [set privsec new_privsec]]
 
-     [ifelse (value_to_change = "financial")[
-          type"the financial value is going to change and has the value " print financial
-          let new_financial (financial + highestvalue) / 2
-          type "new_financial is " print new_financial
-          let random_from_privsec_social one-of ["privsec" "social"]
-          type "random chosen is " print random_from_privsec_social
-             ifelse (random_from_privsec_social = "privsec")[
-               let old_privsec privsec
-               set privsec privsec - (new_financial - financial)
-               type "nieuwe privsec is nu: " print privsec
-               ifelse (privsec < 0)[
-                 print "Privsec is nu onder nul"
-                 set financial financial + old_privsec
-                 set privsec 0]
-               [set financial new_financial]]
-             [ifelse (random_from_privsec_social = "social")[
-                 let old_social social
-               set social social - (new_financial - financial)
-               type "nieuwe social is nu: " print social
-               ifelse (social < 0)[
-               set financial financial + old_social
-               set social 0]
-               [set financial new_financial]]
-             [print "there is something wrong with random choice from social and privsec!"]]]
+    ;if the financial value is going to increase
+    [ifelse (value_to_change = "financial")[
+      let new_financial (financial + highestvalue) / 2
+      let random_from_privsec_social one-of ["privsec" "social"]
+      ifelse (random_from_privsec_social = "privsec")[
+        let old_privsec privsec
+        set privsec privsec - (new_financial - financial)
+        ifelse (privsec < 0)[
+          set financial financial + old_privsec
+          set privsec 0]
+        [set financial new_financial]]
+      [ifelse (random_from_privsec_social = "social")[
+        let old_social social
+        set social social - (new_financial - financial)
+        ifelse (social < 0)[
+          set financial financial + old_social
+          set social 0]
+        [set financial new_financial]]
+      [print "there is something wrong with random choice from social and privsec!"]]]
 
-      [print "value_to_change is not social and not privsec and not financial"]]]
-
-    type "The " type contracttype print " was the contract with the LOWEST marketshare and updated his contractattributes"
-    print  "the new situation is "
-    type "financial: " print financial
-    type "privsec: " print privsec
-    type "social gain: " print social ]
-
+    [print "value_to_change is not social and not privsec and not financial"]]]]
 end
 
 
 to calculateconsumerchoices
-
   ask consumers [set responsiveness false]
   ask n-of number_of_responsive_consumers consumers [set responsiveness true]
 
@@ -382,24 +361,28 @@ to calculateconsumerchoices
         set RTPHscore RTPHscore + infostrategy_increasevalue]
     ]]
 
-
-
-  Ask Consumers[
+  ask Consumers[
     let test (list RTPscore CPPscore ToUscore RTPHscore)
     let highest max test
-    ifelse(RTPscore = highest)[
-      set chosen_contract "RTP"]
-    [ifelse(CPPscore = highest)[
-      set chosen_contract "CPP"]
-    [ifelse(ToUscore = highest)[
-      set chosen_contract "ToU"]
-    [ifelse(RTPHscore = highest)[
-      set chosen_contract "RTPH"]
-    [show "error in string chosen_contract"]]]]]
-
-
+    let maximumlist []
+    let numberofmax 0
+    if(RTPscore = highest)[
+      set numberofmax numberofmax + 1
+      set maximumlist lput "RTP" maximumlist ]
+    if(CPPscore = highest)[
+      set numberofmax numberofmax + 1
+      set maximumlist lput "CPP" maximumlist ]
+    if(ToUscore = highest)[
+      set numberofmax numberofmax + 1
+      set maximumlist lput "ToU" maximumlist ]
+    if(RTPHscore = highest)[
+      set numberofmax numberofmax + 1
+      set maximumlist lput "RTPH" maximumlist ]
+    set chosen_contract item (random (length maximumlist)) maximumlist
+  ]
 end
 
+;this is for the animation
 to move-turtles
   ask Consumers [
     ifelse (chosen_contract = "RTP") [
@@ -414,42 +397,26 @@ to move-turtles
     fd 1]
 end
 
-to calculate_totals_contract_specifications ;for each run it calculates the contracts' total sum of financial, social and privsec values
-
+to calculate_totals_contract_specifications
   set total_financial 0
-  ask contracts [
-    set total_financial total_financial + financial]
-
   set total_social_gains 0
-  ask contracts [
-    set total_social_gains total_social_gains + social]
-
   set total_privsec 0
   ask contracts [
+    set total_financial total_financial + financial
+    set total_social_gains total_social_gains + social
     set total_privsec total_privsec + privsec]
-
 end
 
-to calculate_totals_contract_specifications_correctedbymarketshare ;for each run it calculates the contracts' total sum of financial, social and privsec values corrected by the marketshares
-
+to calculate_totals_contract_specifications_correctedbymarketshare
   set total_financial_correctedbymarketshare 0
-  ask contracts [
-    if (marketshare != 0)[
-      set total_financial_correctedbymarketshare total_financial_correctedbymarketshare + (financial / marketshare)]
-  ]
-
   set total_social_gains_correctedbymarketshare 0
-  ask contracts [
-    if (marketshare != 0)[
-    set total_social_gains_correctedbymarketshare total_social_gains_correctedbymarketshare + (social / marketshare)]
-  ]
-
   set total_privsec_correctedbymarketshare 0
   ask contracts [
     if (marketshare != 0)[
-    set total_privsec_correctedbymarketshare total_privsec_correctedbymarketshare + (privsec / marketshare)]
+      set total_financial_correctedbymarketshare total_financial_correctedbymarketshare + (financial * marketshare)
+      set total_social_gains_correctedbymarketshare total_social_gains_correctedbymarketshare + (social * marketshare)
+      set total_privsec_correctedbymarketshare total_privsec_correctedbymarketshare + (privsec * marketshare)]
   ]
-
 end
 
 to calculate_infostrategies_forplot
@@ -458,40 +425,45 @@ to calculate_infostrategies_forplot
   set info_ToU 0
   set info_RTPH 0
   ask contracts with [contracttype = "RTP"][
-    set info_RTP information_strategy
-  ]
+    set info_RTP information_strategy]
   ask contracts with [contracttype = "CPP"][
-    set info_CPP information_strategy
-  ]
+    set info_CPP information_strategy]
   ask contracts with [contracttype = "ToU"][
-    set info_ToU information_strategy
-  ]
+    set info_ToU information_strategy]
   ask contracts with [contracttype = "RTPH"][
-    set info_RTPH information_strategy
-  ]
+    set info_RTPH information_strategy]
 end
-
-
 
 to calculate_number_of_consumers
-
   set total_consumers_RTP 0
   ask contracts with [contracttype = "RTP"][
-      set total_consumers_RTP amount_of_consumers]
-
+    set total_consumers_RTP amount_of_consumers]
   set total_consumers_CPP 0
   ask contracts with [contracttype = "CPP"][
-      set total_consumers_CPP amount_of_consumers]
-
+    set total_consumers_CPP amount_of_consumers]
   set total_consumers_ToU 0
   ask contracts with [contracttype = "ToU"][
-      set total_consumers_ToU amount_of_consumers]
-
+    set total_consumers_ToU amount_of_consumers]
   set total_consumers_RTPH 0
   ask contracts with [contracttype = "RTPH"][
-      set total_consumers_RTPH amount_of_consumers]
-
+    set total_consumers_RTPH amount_of_consumers]
 end
+
+to calculate_marketshare_per_contract
+  set marketshare_RTP 0
+  ask contracts with [contracttype = "RTP"][
+    set marketshare_RTP marketshare * 100]
+  set marketshare_CPP 0
+  ask contracts with [contracttype = "CPP"][
+    set marketshare_CPP marketshare * 100]
+  set marketshare_ToU 0
+  ask contracts with [contracttype = "ToU"][
+    set marketshare_ToU marketshare * 100]
+  set marketshare_RTPH 0
+  ask contracts with [contracttype = "RTPH"][
+    set marketshare_RTPH marketshare * 100]
+end
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 8
@@ -984,6 +956,27 @@ PENS
 "CPP" 1.0 0 -10899396 true "" "plot info_CPP"
 "ToU" 1.0 0 -6459832 true "" "plot info_ToU"
 "RTP with HA" 1.0 0 -2674135 true "" "plot info_RTPH"
+
+PLOT
+1512
+225
+1802
+461
+Marketshares per Contract
+time
+marketshare
+0.0
+100.0
+0.0
+100.0
+true
+true
+"" ""
+PENS
+"RTP" 1.0 0 -1184463 true "" "plot marketshare_RTP"
+"CPP" 1.0 0 -10899396 true "" "plot marketshare_CPP"
+"ToU" 1.0 0 -6459832 true "" "plot marketshare_ToU"
+"RTP with HA" 1.0 0 -2674135 true "" "plot marketshare_RTPH"
 
 @#$#@#$#@
 ## WHAT IS IT?

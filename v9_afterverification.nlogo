@@ -35,6 +35,9 @@ globals[
   marketshare_ToU
   marketshare_RTPH
 
+  lhsExperimentNumber ;; experiment numbber
+  lhs ;; the file to hold the experiments
+
 ]
 
 
@@ -169,14 +172,14 @@ end
 to go
   set time_count time_count + 1
   calculatemarketshare
-  apply_information_or_market_strategy
-  calculateconsumerchoices
-  move-turtles
   calculate_totals_contract_specifications ;this calculates the sums for the contract specifications to plot it in the graph
   calculate_totals_contract_specifications_correctedbymarketshare ; this calculates the sum for the contract specification corrected by marketshares to plot it in the graph
   calculate_number_of_consumers ;this calculates the total of consumers per contract to plot it in the graph
   calculate_infostrategies_forplot ;this calculates the different information strategies used to plot it in the graph
   calculate_marketshare_per_contract ;this calculates the marketshares per contract to plot it in the graph
+  apply_information_or_market_strategy
+  calculateconsumerchoices
+  move-turtles
   tick
   if (ticks = 60)[ ;The simulation stops after 5 years
     stop]
@@ -464,6 +467,37 @@ to calculate_marketshare_per_contract
     set marketshare_RTPH marketshare * 100]
 end
 
+to  load-experiments
+
+  ;; We check to make sure the file exists first
+  ifelse(file-exists? "lhsExperiment.data" )
+  [
+    ;; We are saving the data into a matrix, so it only needs to be loaded once.
+  set lhs []
+  file-open "lhsExperiment.data"
+    ;; Read in all the data in the file
+    while [ not file-at-end? ]
+    [
+      ;; file-read gives you variables.  In this case numbers and booleans
+      ;; We store them in a double list (ex [[1 1 9.9999] [1 2 9.9999] ...
+      ;; Each iteration we append the next four-tuple to the current list
+      set lhs sentence lhs (list (list file-read file-read))
+    ]
+   ;; Done reading in patch information.  Close the file.
+    file-close
+  ]
+  [ user-message "There is no File lhsExperiment.data file in current directory!" ]
+
+end
+
+to setup-parameters
+  ;; this methods is to be run by the Behaviour Space, which sets the lhsExperimentNumber variable
+  ;; from 1 to n
+let currentExperiment item lhsExperimentNumber lhs
+set infostrategy_increasevalue item  0 currentExperiment
+set percentage_unresponsive_consumers item  1 currentExperiment
+
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 8
@@ -535,7 +569,7 @@ percentage_unresponsive_consumers
 percentage_unresponsive_consumers
 0.4
 .6
-0.51
+0.472555763559416
 0.01
 1
 NIL
@@ -550,7 +584,7 @@ infostrategy_increasevalue
 infostrategy_increasevalue
 0
 5
-5
+0.688871165714227
 0.1
 1
 NIL
@@ -763,10 +797,10 @@ Total_Number_of_Households
 Number
 
 PLOT
-1081
-10
-1479
-234
+1074
+15
+1472
+239
 Development of Contract Specifications
 time
 Sum from all contracts
@@ -786,10 +820,10 @@ PENS
 "privsec corrected" 1.0 0 -6459832 true "" "plot total_privsec_correctedbymarketshare"
 
 PLOT
-1074
-242
-1485
-476
+1076
+243
+1473
+465
 Number of Consumers per Contract
 time
 NIL
@@ -937,10 +971,10 @@ Real Time Pricing with \nHome Automation
 1
 
 PLOT
-1492
-14
-1798
-190
+1486
+17
+1884
+238
 Information Strategies
 time
 Information Strategy
@@ -958,15 +992,15 @@ PENS
 "RTP with HA" 1.0 0 -2674135 true "" "plot info_RTPH"
 
 PLOT
-1512
-225
-1802
-461
+1486
+245
+1881
+466
 Marketshares per Contract
 time
 marketshare
 0.0
-100.0
+10.0
 0.0
 100.0
 true
@@ -1326,11 +1360,14 @@ NetLogo 5.2.1
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experimentinfostrategy" repetitions="1" runMetricsEveryStep="true">
+  <experiment name="experimenttest1" repetitions="100" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
     <timeLimit steps="60"/>
-    <metric>count turtles</metric>
+    <metric>total_consumers_RTP</metric>
+    <metric>total_consumers_CPP</metric>
+    <metric>total_consumers_ToU</metric>
+    <metric>total_consumers_RTPH</metric>
     <enumeratedValueSet variable="RTP_HA_environmental">
       <value value="0.8"/>
     </enumeratedValueSet>
@@ -1346,7 +1383,9 @@ NetLogo 5.2.1
     <enumeratedValueSet variable="ToU_environmental">
       <value value="0.2"/>
     </enumeratedValueSet>
-    <steppedValueSet variable="infostrategy_increasevalue" first="0" step="0.1" last="5"/>
+    <enumeratedValueSet variable="infostrategy_increasevalue">
+      <value value="0"/>
+    </enumeratedValueSet>
     <enumeratedValueSet variable="Techies">
       <value value="0.2"/>
     </enumeratedValueSet>
@@ -1384,7 +1423,7 @@ NetLogo 5.2.1
       <value value="0.8"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="percentage_unresponsive_consumers">
-      <value value="0.51"/>
+      <value value="0.5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Environmentalists">
       <value value="0.2"/>
@@ -1413,6 +1452,385 @@ NetLogo 5.2.1
     <enumeratedValueSet variable="ToU_social_gains">
       <value value="0.2"/>
     </enumeratedValueSet>
+  </experiment>
+  <experiment name="experimenttest2" repetitions="100" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>total_consumers_RTP</metric>
+    <metric>total_consumers_CPP</metric>
+    <metric>total_consumers_ToU</metric>
+    <metric>total_consumers_RTPH</metric>
+    <enumeratedValueSet variable="ToU_environmental">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_financial">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_privsec">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Environmentalists">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_environmental">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_usability">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_privsec">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Techies">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Low_Income_Households">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_usability">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_usability">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Neutrals">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_social_gains">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_financial">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_social_gains">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_privsec">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_usability">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_financial">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_financial">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="percentage_unresponsive_consumers">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Young_Families">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_environmental">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_privsec">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_social_gains">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Total_Number_of_Households">
+      <value value="3000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_environmental">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="infostrategy_increasevalue">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_social_gains">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experimenttest3" repetitions="100" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>total_consumers_RTP</metric>
+    <metric>total_consumers_CPP</metric>
+    <metric>total_consumers_ToU</metric>
+    <metric>total_consumers_RTPH</metric>
+    <enumeratedValueSet variable="ToU_environmental">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_financial">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_privsec">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Environmentalists">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_environmental">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_usability">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_privsec">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Techies">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Low_Income_Households">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_usability">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_usability">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Neutrals">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_social_gains">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_financial">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_social_gains">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_privsec">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_usability">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_financial">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_financial">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="percentage_unresponsive_consumers">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Young_Families">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_environmental">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_privsec">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_social_gains">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Total_Number_of_Households">
+      <value value="3000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_environmental">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="infostrategy_increasevalue">
+      <value value="2.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_social_gains">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment1000test2" repetitions="1000" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>total_consumers_RTP</metric>
+    <metric>total_consumers_CPP</metric>
+    <metric>total_consumers_ToU</metric>
+    <metric>total_consumers_RTPH</metric>
+    <enumeratedValueSet variable="ToU_environmental">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_financial">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_privsec">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Environmentalists">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_environmental">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_usability">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_privsec">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Techies">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Low_Income_Households">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_usability">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_usability">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Neutrals">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_social_gains">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_financial">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_social_gains">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_privsec">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_usability">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_financial">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_financial">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="percentage_unresponsive_consumers">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Young_Families">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_environmental">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_privsec">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_social_gains">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Total_Number_of_Households">
+      <value value="3000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_environmental">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="infostrategy_increasevalue">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_social_gains">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="ExperimentLHSbased" repetitions="100" runMetricsEveryStep="true">
+    <setup>load-experiments
+setup-parameters
+setup</setup>
+    <go>go</go>
+    <metric>total_financial</metric>
+    <metric>total_social_gains</metric>
+    <metric>total_privsec</metric>
+    <metric>total_financial_correctedbymarketshare</metric>
+    <metric>total_social_gains_correctedbymarketshare</metric>
+    <metric>total_privsec_correctedbymarketshare</metric>
+    <metric>total_consumers_RTP</metric>
+    <metric>total_consumers_CPP</metric>
+    <metric>total_consumers_ToU</metric>
+    <metric>total_consumers_RTPH</metric>
+    <metric>info_RTP</metric>
+    <metric>info_CPP</metric>
+    <metric>info_ToU</metric>
+    <metric>info_RTPH</metric>
+    <metric>marketshare_RTP</metric>
+    <metric>marketshare_CPP</metric>
+    <metric>marketshare_ToU</metric>
+    <metric>marketshare_RTPH</metric>
+    <enumeratedValueSet variable="ToU_privsec">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_financial">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_privsec">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_usability">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_usability">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_environmental">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Total_Number_of_Households">
+      <value value="3000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_social_gains">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_social_gains">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_social_gains">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_HA_environmental">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Techies">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_environmental">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_financial">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_usability">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Neutrals">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_privsec">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_usability">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_financial">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Young_Families">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_environmental">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Low_Income_Households">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ToU_financial">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Environmentalists">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CPP_social_gains">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="RTP_privsec">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="lhsExperimentNumber" first="0" step="1" last="49"/>
   </experiment>
 </experiments>
 @#$#@#$#@

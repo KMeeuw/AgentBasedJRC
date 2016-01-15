@@ -179,14 +179,14 @@ to go
 
   set time_count time_count + 1
   calculatemarketshare
-  apply_information_or_market_strategy
-  calculateconsumerchoices
-  move-turtles
   calculate_totals_contract_specifications ;this calculates the sums for the contract specifications to plot it in the graph
   calculate_totals_contract_specifications_correctedbymarketshare ; this calculates the sum for the contract specification corrected by marketshares to plot it in the graph
   calculate_number_of_consumers ;this calculates the total of consumers per contract to plot it in the graph
   calculate_infostrategies_forplot
   calculate_marketshare_per_contract
+  apply_information_or_market_strategy
+  calculateconsumerchoices
+  move-turtles
   type "Total number of consumers after a tick " print total_number_of_consumers
   tick
   if (ticks = 60)[
@@ -715,7 +715,7 @@ percentage_unresponsive_consumers
 percentage_unresponsive_consumers
 0.4
 .6
-0.6
+0.5
 0.01
 1
 NIL
@@ -730,7 +730,7 @@ infostrategy_increasevalue
 infostrategy_increasevalue
 0
 5
-5
+0
 0.1
 1
 NIL
@@ -872,7 +872,7 @@ INPUTBOX
 606
 223
 Low_Income_Households
-0.25
+0.2
 1
 0
 Number
@@ -883,7 +883,7 @@ INPUTBOX
 606
 282
 Young_Families
-0.25
+0.2
 1
 0
 Number
@@ -894,7 +894,7 @@ INPUTBOX
 606
 341
 Environmentalists
-0.25
+0.2
 1
 0
 Number
@@ -905,7 +905,7 @@ INPUTBOX
 606
 401
 Techies
-0.25
+0.2
 1
 0
 Number
@@ -916,7 +916,7 @@ INPUTBOX
 606
 460
 Neutrals
-0
+0.2
 1
 0
 Number
@@ -937,7 +937,7 @@ INPUTBOX
 621
 123
 Total_Number_of_Households
-5
+3000
 1
 0
 Number
@@ -992,7 +992,7 @@ INPUTBOX
 945
 192
 ToU_financial
-0.8
+0.2
 1
 0
 Number
@@ -1003,7 +1003,7 @@ INPUTBOX
 944
 251
 ToU_social_gains
-0.8
+0.2
 1
 0
 Number
@@ -1014,7 +1014,7 @@ INPUTBOX
 944
 310
 ToU_environmental
-0.8
+0.2
 1
 0
 Number
@@ -1025,7 +1025,7 @@ INPUTBOX
 944
 369
 ToU_privsec
-0
+0.8
 1
 0
 Number
@@ -1557,11 +1557,14 @@ NetLogo 5.2.1
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experimentinfostrategy" repetitions="1" runMetricsEveryStep="true">
+  <experiment name="variabilitytest1" repetitions="1" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
     <timeLimit steps="60"/>
-    <metric>count turtles</metric>
+    <metric>total_consumers_RTP</metric>
+    <metric>total_consumers_CPP</metric>
+    <metric>total_consumers_ToU</metric>
+    <metric>total_consumers_RTPH</metric>
     <enumeratedValueSet variable="RTP_HA_environmental">
       <value value="0.8"/>
     </enumeratedValueSet>
@@ -1577,7 +1580,9 @@ NetLogo 5.2.1
     <enumeratedValueSet variable="ToU_environmental">
       <value value="0.2"/>
     </enumeratedValueSet>
-    <steppedValueSet variable="infostrategy_increasevalue" first="0" step="0.1" last="5"/>
+    <enumeratedValueSet variable="infostrategy_increasevalue">
+      <value value="0"/>
+    </enumeratedValueSet>
     <enumeratedValueSet variable="Techies">
       <value value="0.2"/>
     </enumeratedValueSet>
@@ -1615,7 +1620,7 @@ NetLogo 5.2.1
       <value value="0.8"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="percentage_unresponsive_consumers">
-      <value value="0.51"/>
+      <value value="0.5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Environmentalists">
       <value value="0.2"/>

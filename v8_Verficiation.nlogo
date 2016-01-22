@@ -46,13 +46,14 @@ contracts-own [contracttype flexibility financial social environmental privsec u
 
 to setup
   clear-all
-  set number_of_responsive_consumers (1 - percentage_unresponsive_consumers ) * Total_Number_of_Households ;calculates the number of responsive consumers from all the interfact inputs
+
   setup-contracts
   if (Low_Income_Households + Young_Families + Environmentalists + Techies + Neutrals != 1) [print "Percentages of consumer groups don't add up to 1!!"] ;check that the input of the consumer groups percentages is correct
   setup-consumers
   setup-patches
   initialcalculateconsumercontracts
   set total_number_of_consumers count consumers
+  set number_of_responsive_consumers (1 - percentage_unresponsive_consumers ) * total_number_of_consumers ;calculates the number of responsive consumers from all the interfact inputs
   type "Initial total number of consumers" print total_number_of_consumers
   reset-ticks
 end
@@ -937,7 +938,7 @@ INPUTBOX
 621
 123
 Total_Number_of_Households
-3000
+4
 1
 0
 Number

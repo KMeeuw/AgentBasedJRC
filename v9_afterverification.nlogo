@@ -9,7 +9,6 @@ globals[
 
   total_number_of_consumers
   time_count
-  checksum_total_sum_marketshares
   number_of_responsive_consumers
   contract_under_consideration
 
@@ -49,13 +48,13 @@ contracts-own [contracttype flexibility financial social environmental privsec u
 
 to setup
   clear-all
-  set number_of_responsive_consumers (1 - percentage_unresponsive_consumers ) * Total_Number_of_Households ;calculates the number of responsive consumers from all the interfact inputs
   setup-contracts
   if (Low_Income_Households + Young_Families + Environmentalists + Techies + Neutrals != 1) [print "Percentages of consumer groups don't add up to 1!!"] ;check that the input of the consumer groups percentages is correct
   setup-consumers
   setup-patches
   initialcalculateconsumercontracts
   set total_number_of_consumers count consumers
+  set number_of_responsive_consumers (1 - percentage_unresponsive_consumers ) * total_number_of_consumers ;calculates the number of responsive consumers from all the interfact inputs
   reset-ticks
 end
 
@@ -244,7 +243,6 @@ to update_contract
     set information_strategy 0]
 
   let maximum_marketshare [marketshare] of max-one-of contracts [marketshare]
-  let minimum2_marketshare [marketshare] of min-one-of contracts [marketshare]
 
   ;to ensure that when two contracts have the highest marketshare only one will be chosen to compare the contract_under_consideration with
   ask contracts with [contracttype != contract_under_consideration and marketshare = maximum_marketshare][

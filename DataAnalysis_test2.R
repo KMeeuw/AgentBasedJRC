@@ -1,27 +1,3 @@
-
-
-#test on small dataset
-Contracttype = c("RTP", "RTP","RTP", "RTP", "CPP", "CPP","CPP", "CPP", "ToU", "ToU","ToU", "ToU", "RTPH", "RTPH", "RTPH", "RTPH")
-Step = c(10, 60, 10, 60, 10, 60, 10, 60,10, 60, 10, 60, 10, 60, 10, 60)
-Number_of_Consumers = c(0, 1000, 0, 1200, 500, 700, 2400, 2400, 1000, 0, 1200, 500, 700, 2400, 2400, 0)
-Runnumber = c(1,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2)
-infostrategy_increasevalue = c(1, 2.5, 3, 5, 1, 2.5, 3, 5, 1, 2.5, 3, 5, 1, 2.5, 3, 5 )
-testdataframe = data.frame(Contracttype, Step, Number_of_Consumers, Runnumber, infostrategy_increasevalue)
-library(car)
-scatterplot(Number_of_Consumers ~ Step, group=Contracttype, data = testdataframe, xlab="Time", ylab="Number of Consumers", main = "Consumers")
-
-#test (old)
-library(car)
-scatterplot(Number_of_Consumers ~ Step, reg.line = FALSE, smoother = FALSE, group=Contracttype, by.group = FALSE, data = subset(total, infostrategy_increasevalue >=0 & infostrategy_increasevalue < 0.5), xlab="Time", ylab="Number of Consumers", main = "Consumers")
-scatterplot(Number_of_Consumers ~ Step, reg.line = FALSE, smoother = FALSE, group=Contracttype, by.group = FALSE, data = subset(total, infostrategy_increasevalue >=0.5 & infostrategy_increasevalue < 1), xlab="Time", ylab="Number of Consumers", main = "Consumers")
-scatterplot(Number_of_Consumers ~ Step, reg.line = FALSE, smoother = FALSE, group=Contracttype, by.group = FALSE, data = subset(total, infostrategy_increasevalue >=1 & infostrategy_increasevalue < 1.5), xlab="Time", ylab="Number of Consumers", main = "Consumers")
-scatterplot(Number_of_Consumers ~ Step, reg.line = FALSE, smoother = FALSE, group=Contracttype, by.group = FALSE, data = subset(total, infostrategy_increasevalue >=1.5 & infostrategy_increasevalue < 2), xlab="Time", ylab="Number of Consumers", main = "Consumers")
-scatterplot(Number_of_Consumers ~ Step, reg.line = FALSE, smoother = FALSE, group=Contracttype, by.group = FALSE, data = subset(total, infostrategy_increasevalue >=2.5 & infostrategy_increasevalue < 3), xlab="Time", ylab="Number of Consumers", main = "Consumers")
-scatterplot(Number_of_Consumers ~ Step, reg.line = FALSE, smoother = FALSE, group=Contracttype, by.group = FALSE, data = subset(total, infostrategy_increasevalue >=3 & infostrategy_increasevalue < 3.5), xlab="Time", ylab="Number of Consumers", main = "Consumers")
-scatterplot(Number_of_Consumers ~ Step, reg.line = FALSE, smoother = FALSE, group=Contracttype, by.group = FALSE, data = subset(total, infostrategy_increasevalue >=3.5 & infostrategy_increasevalue < 4), xlab="Time", ylab="Number of Consumers", main = "Consumers")
-scatterplot(Number_of_Consumers ~ Step, reg.line = FALSE, smoother = FALSE, group=Contracttype, by.group = FALSE, data = subset(total, infostrategy_increasevalue >4 & infostrategy_increasevalue < 4.5), xlab="Time", ylab="Number of Consumers", main = "Consumers")
-scatterplot(Number_of_Consumers ~ Step, reg.line = FALSE, smoother = FALSE, group=Contracttype, by.group = FALSE, data = subset(total, infostrategy_increasevalue >4.5 & infostrategy_increasevalue < 5), xlab="Time", ylab="Number of Consumers", main = "Consumers")
-
 #metric 1
 library(lattice)
 library(latticeExtra)
@@ -53,7 +29,4 @@ sd(myDataAnalysis$total_social_gains_correctedbymarketshare)
 sd(myDataAnalysis$total_privsec_correctedbymarketshare)
 
 #metric3
-xyplot(Infostrategy ~ Step | Contracttype, data = total, xlab="Time", ylab="Infostrategy", main = "Infostrategy used", layout= c(1,4))
-
-library(car)
-scatterplotMatrix(~ Step + Infostrategy + Marketshare | Contracttype, data = total )
+cloud(Infostrategy ~ Step*Marketshare | Contracttype, data = total, xlab="Time", ylab="Marketshare", zlab="Information strategie", main = "Infostrategies over time by marketshare", scales = list(z = list(arrows = FALSE, distance = 3), x = list(arrows =FALSE, distance = 2), y = list(arrows = FALSE, distance = 2)))
